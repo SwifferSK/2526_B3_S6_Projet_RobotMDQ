@@ -3,9 +3,10 @@
 Inventaire des composants : 
 
 - 2 moteurs pas à pas (TMC2225)
-- IMU LSM6DSOX
+- IMU_LSM6DSOX
 - Raspberry PI Zero
-- MCP 3208
+- MCP_3208
 - 4 Mounting Hole
 - 8 photoresistances
-- 1 connecteur 01x04
+- 3 connecteur 01x04 (2 POUR MOTEUR ET 1 POUR LA BATTERIE)
+- Regulateur de tension Buck 3.3V
