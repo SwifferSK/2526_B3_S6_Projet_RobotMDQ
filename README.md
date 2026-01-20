@@ -8,5 +8,5 @@ Inventaire des composants :
 - MCP_3208
 - 4 Mounting Hole
 - 8 photoresistances
-- 3 connecteur 01x04 (2 POUR MOTEUR ET 1 POUR LA BATTERIE)
+- 5 connecteurs (2 POUR MOTEUR ET 1 POUR LA BATTERIE et 1 pour la raspberry et 1 pour relier infrarouge au mcp3208)
 - Regulateur de tension Buck 3.3V
