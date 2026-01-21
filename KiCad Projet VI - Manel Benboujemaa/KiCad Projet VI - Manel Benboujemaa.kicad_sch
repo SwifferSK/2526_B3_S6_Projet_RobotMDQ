@@ -1,0 +1,12 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "9.0")
+	(uuid "0baa70ce-2c38-40f9-afdf-d7e8f4fa45d3")
+	(paper "A4")
+	(title_block
+		(date "2026-01-20")
+		(company "ENSEA")
+	)
+	(lib_symbols
+		(symbol "Co
