@@ -2895,9 +2895,9 @@
 		)
 		(uuid "8a42ecb3-7597-493b-9f9d-af1efb55fe8e")
 	)
-	(text "LED\n\n"
+	(text "LEDD\n\n\n\n"
 		(exclude_from_sim no)
-		(at 76.962 84.328 0)
+		(at 76.962 86.614 0)
 		(effects
 			(font
 				(size 1.27 1.27)
