@@ -2,7 +2,7 @@
 	(version 20250114)
 	(generator "eeschema")
 	(generator_version "9.0")
-	(uuid "df199792-9053-4e42-b090-f5e2344dda51")
+	(uuid "9345e886-9974-4a30-a8e8-fdd6e616fa7e")
 	(paper "A4")
 	(lib_symbols
 		(symbol "Adafruit_LSM6DSOX-eagle-import:LSM6DSOX"
@@ -2341,7 +2341,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "Adafruit_LSM6DSOX:LGA-14L"
+		(property "Footprint" "Package_LGA:LGA-14_3x2.5mm_P0.5mm_LayoutBorder3x4y"
 			(at 157.48 102.87 0)
 			(effects
 				(font
