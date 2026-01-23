@@ -420,6 +420,10 @@
     [
       "dd72f74b-5e7d-4592-90a6-8866feca75fb",
       "TMC2225 RIGHT"
+    ],
+    [
+      "262830eb-cda8-481d-a25c-bbba49056e31",
+      "IMU LSM6DOX"
     ]
   ],
   "text_variables": {}
