@@ -1254,16 +1254,6 @@
 	)
 	(wire
 		(pts
-			(xy 114.3 78.74) (xy 119.38 78.74)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a9eecba3-3e5f-45ac-a82e-5e379d969fb1")
-	)
-	(wire
-		(pts
 			(xy 142.24 113.03) (xy 139.7 113.03)
 		)
 		(stroke
@@ -1364,7 +1354,7 @@
 	)
 	(wire
 		(pts
-			(xy 101.6 78.74) (xy 106.68 78.74)
+			(xy 101.6 78.74) (xy 119.38 78.74)
 		)
 		(stroke
 			(width 0)
@@ -2171,74 +2161,6 @@
 			(project "Robot"
 				(path "/f1dd5862-79ad-43be-9f5c-46baed2cd441/262830eb-cda8-481d-a25c-bbba49056e31"
 					(reference "#PWR048")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 110.49 78.74 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "da12868a-81cb-4578-9e44-705840163215")
-		(property "Reference" "R17"
-			(at 110.49 72.39 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "0"
-			(at 110.49 74.93 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
-			(at 110.49 76.962 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 110.49 78.74 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 110.49 78.74 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "93aa16cf-1d32-4429-903f-90411b0aac43")
-		)
-		(pin "1"
-			(uuid "2f46be43-2eec-407a-8df7-30cf6bf0d0b2")
-		)
-		(instances
-			(project "Robot"
-				(path "/f1dd5862-79ad-43be-9f5c-46baed2cd441/262830eb-cda8-481d-a25c-bbba49056e31"
-					(reference "R17")
 					(unit 1)
 				)
 			)
