@@ -658,7 +658,7 @@
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "U?"
+			(property "Reference" "U2"
 				(at 63.1033 119.38 0)
 				(effects
 					(font
@@ -667,7 +667,7 @@
 					(justify left)
 				)
 			)
-			(property "Value" "TMC2225-SA"
+			(property "Value" "TMC2225-SA-T"
 				(at 63.1033 116.84 0)
 				(effects
 					(font
@@ -676,7 +676,7 @@
 					(justify left)
 				)
 			)
-			(property "Footprint" "HTSSOP28_TRI"
+			(property "Footprint" "Package_SO:HTSSOP-28-1EP_4.4x9.7mm_P0.65mm_EP2.85x5.4mm_ThermalVias"
 				(at 95.25 86.36 0)
 				(effects
 					(font
@@ -686,7 +686,7 @@
 					(hide yes)
 				)
 			)
-			(property "Datasheet" "TMC2225-SA"
+			(property "Datasheet" "TMC2225-SA-T"
 				(at 95.25 86.36 0)
 				(effects
 					(font
@@ -1127,14 +1127,14 @@
 				(pin passive line
 					(at 60.96 50.8 90)
 					(length 7.62)
-					(name "GROUND"
+					(name "EPAD"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "EPAD"
+					(number "29"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3671,7 +3671,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "TMC2225-SA"
+		(property "Datasheet" "TMC2225-SA-T"
 			(at 184.15 99.06 0)
 			(effects
 				(font
@@ -3696,7 +3696,7 @@
 		(pin "2"
 			(uuid "94538ae9-7153-4a21-84d3-7ca2efe53b30")
 		)
-		(pin "EPAD"
+		(pin "29"
 			(uuid "6bfbd386-c7ca-48d7-a6e2-20bb8bd46d74")
 		)
 		(pin "14"

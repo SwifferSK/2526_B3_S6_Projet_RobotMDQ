@@ -667,7 +667,7 @@
 					(justify left)
 				)
 			)
-			(property "Value" "TMC2225-SA"
+			(property "Value" "TMC2225-SA-T"
 				(at 63.1033 116.84 0)
 				(effects
 					(font
@@ -676,7 +676,7 @@
 					(justify left)
 				)
 			)
-			(property "Footprint" "HTSSOP28_TRI"
+			(property "Footprint" "Package_SO:HTSSOP-28-1EP_4.4x9.7mm_P0.65mm_EP2.85x5.4mm_ThermalVias"
 				(at 95.25 86.36 0)
 				(effects
 					(font
@@ -1127,14 +1127,14 @@
 				(pin power_in line
 					(at 60.96 50.8 90)
 					(length 7.62)
-					(name "GROUND"
+					(name "EPAD"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "EPAD"
+					(number "29"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3789,7 +3789,7 @@
 		(pin "2"
 			(uuid "05f47158-b458-499c-9670-062aab7e0080")
 		)
-		(pin "EPAD"
+		(pin "29"
 			(uuid "737c539b-5cb3-4b3f-8ed3-ce3819b7ea2b")
 		)
 		(pin "14"
