@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=17&pause=900&center=true&vCenter=true&width=900&lines=Projet+Bachelor+ENSEA+%E2%80%94+Ann%C3%A9e+3;Line+Follower+Robot+%E2%80%A2+IMU+%2B+Capteurs+ligne+%2B+Drivers+moteurs;Contr%C3%B4le+temps+r%C3%A9el+%7C+T%C3%A9l%C3%A9m%C3%A9trie+%7C+Logging" />
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=17&pause=900&center=true&vCenter=true&width=900&lines=Projet+Bachelor+ENSEA+%E2%80%94+Ann%C3%A9e+3;Line+Follower+Robot+%E2%80%A2+IMU+%2B" />
 </p>
 
 <!-- ===================================================== -->
