@@ -1636,6 +1636,12 @@
 		(uuid "3a7e149c-e91b-49b9-885e-522b330553a2")
 	)
 	(junction
+		(at 149.86 41.91)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "80dfbb3f-500b-47d2-9f3a-5d51d52a58a8")
+	)
+	(junction
 		(at 90.17 104.14)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1769,6 +1775,16 @@
 	)
 	(wire
 		(pts
+			(xy 163.83 41.91) (xy 163.83 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "10e99ac8-e0e5-4da3-bd0f-0fa2d1f6141e")
+	)
+	(wire
+		(pts
 			(xy 133.35 58.42) (xy 140.97 58.42)
 		)
 		(stroke
@@ -1779,7 +1795,7 @@
 	)
 	(wire
 		(pts
-			(xy 149.86 38.1) (xy 149.86 52.07)
+			(xy 149.86 38.1) (xy 149.86 41.91)
 		)
 		(stroke
 			(width 0)
@@ -1959,6 +1975,16 @@
 	)
 	(wire
 		(pts
+			(xy 149.86 41.91) (xy 149.86 52.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5f503b2c-b663-40a3-8295-08f7e0f64e95")
+	)
+	(wire
+		(pts
 			(xy 199.39 91.44) (xy 208.28 91.44)
 		)
 		(stroke
@@ -1996,6 +2022,16 @@
 			(type default)
 		)
 		(uuid "734a854c-1737-4d2e-b7bc-77cdd5923124")
+	)
+	(wire
+		(pts
+			(xy 161.29 41.91) (xy 163.83 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "75e6da27-e301-4165-972f-72be0937f579")
 	)
 	(wire
 		(pts
@@ -2196,6 +2232,16 @@
 			(type default)
 		)
 		(uuid "b6f0f0c7-5008-4794-924c-8045ef0a287f")
+	)
+	(wire
+		(pts
+			(xy 149.86 41.91) (xy 153.67 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b83acec2-d80e-49cc-866d-ce641f9613d5")
 	)
 	(wire
 		(pts
@@ -4401,6 +4447,72 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 163.83 44.45 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "cf7786ba-a4ba-436f-a751-78ddbc906688")
+		(property "Reference" "#PWR034"
+			(at 163.83 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 163.83 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 163.83 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 163.83 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 163.83 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1fc9db42-608a-4fc3-957a-212df4272d87")
+		)
+		(instances
+			(project "Robot"
+				(path "/f1dd5862-79ad-43be-9f5c-46baed2cd441/7dc21443-1a57-41ca-89e9-e7c3f2f9d506"
+					(reference "#PWR034")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3.3V")
 		(at 140.97 57.15 0)
 		(unit 1)
@@ -4461,6 +4573,73 @@
 			(project "Robot"
 				(path "/f1dd5862-79ad-43be-9f5c-46baed2cd441/7dc21443-1a57-41ca-89e9-e7c3f2f9d506"
 					(reference "#PWR010")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 157.48 41.91 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "d4075047-84a9-4e86-8732-c6fe4c4baa26")
+		(property "Reference" "C9"
+			(at 157.734 36.322 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10uF"
+			(at 157.48 38.608 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
+			(at 161.29 40.9448 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 157.48 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 157.48 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "8cee0385-1766-4ddc-a637-1ebe6303acfc")
+		)
+		(pin "2"
+			(uuid "95bdc04a-c082-4bf0-bc44-dfa739e1f9e2")
+		)
+		(instances
+			(project "Robot"
+				(path "/f1dd5862-79ad-43be-9f5c-46baed2cd441/7dc21443-1a57-41ca-89e9-e7c3f2f9d506"
+					(reference "C9")
 					(unit 1)
 				)
 			)

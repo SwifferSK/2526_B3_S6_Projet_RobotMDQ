@@ -1642,6 +1642,12 @@
 		(uuid "47bc7aa6-3955-4dc0-bac4-1130d83a4009")
 	)
 	(junction
+		(at 149.86 40.64)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5c2c61de-97d7-469d-8c95-148fdae938a6")
+	)
+	(junction
 		(at 140.97 58.42)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1869,6 +1875,16 @@
 	)
 	(wire
 		(pts
+			(xy 149.86 40.64) (xy 153.67 40.64)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "401dd0ee-b4fb-4264-990a-2bd2fbb6a8ed")
+	)
+	(wire
+		(pts
 			(xy 133.35 66.04) (xy 133.35 68.58)
 		)
 		(stroke
@@ -2059,7 +2075,7 @@
 	)
 	(wire
 		(pts
-			(xy 149.86 38.1) (xy 149.86 50.8)
+			(xy 149.86 38.1) (xy 149.86 40.64)
 		)
 		(stroke
 			(width 0)
@@ -2099,6 +2115,16 @@
 	)
 	(wire
 		(pts
+			(xy 163.83 40.64) (xy 163.83 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8af36c89-4289-4ee6-abf4-c36fc135179c")
+	)
+	(wire
+		(pts
 			(xy 149.86 59.69) (xy 153.67 59.69)
 		)
 		(stroke
@@ -2106,6 +2132,16 @@
 			(type default)
 		)
 		(uuid "8f29e1f0-787f-4e65-9910-96c429059ad1")
+	)
+	(wire
+		(pts
+			(xy 149.86 40.64) (xy 149.86 50.8)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "90c4a10c-2259-4e1c-b945-f31aad6e4ba9")
 	)
 	(wire
 		(pts
@@ -2186,6 +2222,16 @@
 			(type default)
 		)
 		(uuid "a0d92d85-b996-4bd8-90cf-ff452b8d2446")
+	)
+	(wire
+		(pts
+			(xy 161.29 40.64) (xy 163.83 40.64)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a8815d24-cefc-4839-b4e0-9a03f39a29f4")
 	)
 	(wire
 		(pts
@@ -2769,6 +2815,73 @@
 			(project "Robot"
 				(path "/f1dd5862-79ad-43be-9f5c-46baed2cd441/dd72f74b-5e7d-4592-90a6-8866feca75fb"
 					(reference "D1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 157.48 40.64 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5142f42c-2208-4691-bbed-a61c42bbbe5a")
+		(property "Reference" "C10"
+			(at 157.734 35.052 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10uF"
+			(at 157.48 37.338 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
+			(at 161.29 39.6748 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 157.48 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 157.48 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fd7f9c87-65b7-4dbf-bcab-46b74822b5cf")
+		)
+		(pin "2"
+			(uuid "a10b002b-6785-4120-8c98-5b12beac8bc1")
+		)
+		(instances
+			(project "Robot"
+				(path "/f1dd5862-79ad-43be-9f5c-46baed2cd441/dd72f74b-5e7d-4592-90a6-8866feca75fb"
+					(reference "C10")
 					(unit 1)
 				)
 			)
@@ -3385,6 +3498,72 @@
 			(project "Robot"
 				(path "/f1dd5862-79ad-43be-9f5c-46baed2cd441/dd72f74b-5e7d-4592-90a6-8866feca75fb"
 					(reference "#PWR021")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 163.83 43.18 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7eee151e-e38f-45f2-911a-8fe0b843fdae")
+		(property "Reference" "#PWR035"
+			(at 163.83 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 163.83 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 163.83 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 163.83 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 163.83 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "7120f054-fefa-4ba1-81c2-9832f76871a2")
+		)
+		(instances
+			(project "Robot"
+				(path "/f1dd5862-79ad-43be-9f5c-46baed2cd441/dd72f74b-5e7d-4592-90a6-8866feca75fb"
+					(reference "#PWR035")
 					(unit 1)
 				)
 			)
