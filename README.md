@@ -275,6 +275,6 @@ Ce projet consiste en la conception d’un **robot autonome suiveur de ligne**, 
 ## Équipe
 
 <p align="center">
-  <b>Manel Benboujemaa • Damien Théas Charlot • Quentin Bechler</b><br/>
+  <b>Manel Benboujemaa • Damien THEAS • Quentin Bechler</b><br/>
   <sub>Bachelor ENSEA — Robotique • Design matériel</sub>
 </p>
