@@ -269,42 +269,6 @@ Ce projet consiste en la conception d’un **robot autonome suiveur de ligne**, 
   <!-- <img src="assets/demo.gif" width="820" alt="Demo GIF" /> -->
 </p>
 
----
-
-## Roadmap
-
-<div align="center">
-
-<table align="center">
-  <tr>
-    <td width="540" valign="top">
-      <h3 align="center">✅ Matériel</h3>
-      <ul>
-        <li>[ ] Schémas finalisés</li>
-        <li>[ ] PCB routing</li>
-        <li>[ ] BOM + commande</li>
-        <li>[ ] Intégration capteurs</li>
-      </ul>
-      <p align="center">
-        <img src="https://progress-bar.dev/45/?title=Hardware&width=520&color=1f2937&suffix=%25" />
-      </p>
-    </td>
-    <td width="540" valign="top">
-      <h3 align="center">🧠 Contrôle & data</h3>
-      <ul>
-        <li>[ ] Acquisition IMU + ADC</li>
-        <li>[ ] Logging CSV</li>
-        <li>[ ] Calibration routines</li>
-        <li>[ ] PID + sécurités</li>
-      </ul>
-      <p align="center">
-        <img src="https://progress-bar.dev/30/?title=Software&width=520&color=1f2937&suffix=%25" />
-      </p>
-    </td>
-  </tr>
-</table>
-
-</div>
 
 ---
 
