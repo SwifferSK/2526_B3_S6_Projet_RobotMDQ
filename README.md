@@ -39,7 +39,6 @@
 - [Hardware](#hardware)
 - [Dashboards](#dashboards)
 - [Demo](#demo)
-- [Roadmap](#roadmap)
 - [Équipe](#équipe)
 
 ---
@@ -202,21 +201,6 @@ Le projet est organisé de manière modulaire. La branche `main` contient le sys
 
 </div>
 
-
-## 👥 Contributors
-
-<div align="center">
-
-<!-- Image contributors automatique (super clean & centré) -->
-<img src="https://contrib.rocks/image?2526_B3_S6_Projet_RobotMDQ=SwifferSK/2526_B3_S6_Projet_RobotMDQ" width="92%" alt="Contributors"/>
-<p>
-  <a href="https://github.com/SwifferSK/2526_B3_S6_Projet_RobotMDQ/graphs/contributors">
-    <img src="https://img.shields.io/badge/Voir%20la%20liste%20compl%C3%A8te-GitHub-111827?style=for-the-badge&logo=github&logoColor=white" />
-  </a>
-</p>
-
-</div>
-
 ---
 
 ## Demo
@@ -226,10 +210,8 @@ Le projet est organisé de manière modulaire. La branche `main` contient le sys
 </p>
 
 <p align="center">
-  <!-- Quand tu l’as : -->
-  <!-- <img src="assets/demo.gif" width="820" alt="Demo GIF" /> -->
+  <!-- <img src="assets/demo.gif" width="820" alt="Demo" /> -->
 </p>
-
 
 ---
 
