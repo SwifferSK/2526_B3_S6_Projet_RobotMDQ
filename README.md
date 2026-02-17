@@ -46,11 +46,9 @@
 
 ## Présentation
 
-Ce projet consiste en la conception d’un **robot autonome suiveur de ligne bipede** 
 
 <br>
-L'obectif est donc de faire un robot capable de suive une ligne tout en restant stable 
-La travail a fournir est une carte electronique,un driver unique capable de gerer tout les fonctions du robot et une boitier 3D.
+Ce projet consiste en la conception et la réalisation d'un robot bipède capable de maintenir son équilibre vertical tout en suivant une ligne tracée au sol. Le cerveau du robot est une **Raspberry Pi Zero 2W**.
 <br><br>
 ---
 
@@ -61,7 +59,7 @@ La travail a fournir est une carte electronique,un driver unique capable de gere
       <td width="300" align="center" valign="top">
         <h3>🛤️ Suivi de ligne</h3>
         <p>
-          Détection contraste sol/ligne<br/>
+          Détection du trajet via des photorésistances/ligne<br/>
           Seuils + calibration<br/>
           Lecture analogique via ADC
         </p>
@@ -86,6 +84,19 @@ La travail a fournir est une carte electronique,un driver unique capable de gere
   </table>
 </div>
 
+---
+##  Structure du Dépôt (Branches)
+
+Le projet est organisé de manière modulaire. La branche `main` contient le système complet, tandis que les branches de développement permettent de tester chaque composant indépendamment :
+
+* **`main`** : Schéma électrique complet,
+* **`Kicad_RPI_IMU`** :Schéma électrique de l'**IMU LSM6DSOX**.
+* **`Kicad_MCP3208`** : Schéma électrique du **MCP3208** et lecture des photorésistances pour la détection de ligne.
+* **`Kicad_TMC2225`** : Schéma électrique de **TMC2225** pour le contrôle des moteurs pas à pas. .
+* **`merged-code`** : Fusion des 3 firmwares.
+* **`Firmware_MCP3208`** : Firmmware du **MCP3208**.
+* **`Firmware_LSM6DSOX`** :Firmmware du l'**IMU LSM6DSOX**.
+* **`Firmware_TMC2225`** : Firmmware du **TMC2225** .
 ---
 
 ## Architecture
@@ -143,7 +154,7 @@ La travail a fournir est une carte electronique,un driver unique capable de gere
   </tr>
   <tr>
     <td><b>TMC2225 (x2)</b></td>
-    <td>Drivers moteurs</td>
+    <td>Drivers moteurs pas à pas</td>
     <td>STEP / DIR</td>
   </tr>
   <tr>
