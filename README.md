@@ -229,6 +229,6 @@ blablablablablablabla
   <img src="ban.jpg" width="100%" />
 </p>
 <p align="center">
-  <b> Damien Theas • Manel Benboujemaa  • Quentin Bechler</b><br/>
+  <b> Damien Theas Charlot Vauréal(95490) DS3 Marron  • Manel Benboujemaa  • Quentin Bechler</b><br/>
   <sub>Bachelor ENSEA — Robotique • Design matériel</sub>
 </p>
