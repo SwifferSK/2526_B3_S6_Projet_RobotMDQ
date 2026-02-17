@@ -39,13 +39,13 @@
 </p>
 
 ---
-
 ## 🧭 Menu
 - [Présentation](#présentation)
 - [Fonctionnalités](#fonctionnalités)
+- [Structure du dépôt](#structure-du-dépôt-branches)
 - [Architecture](#architecture)
 - [Hardware](#hardware)
-- [Dashboards](#dashboards)
+- [Dashboard](#dashboard)
 - [Demo](#demo)
 - [Équipe](#équipe)
 
@@ -53,10 +53,17 @@
 
 ## Présentation
 
+                              
 
-<br>
-Ce projet consiste en la conception et la réalisation d'un robot bipède capable de maintenir son équilibre vertical tout en suivant une ligne tracée au sol. Le cerveau du robot est une **Raspberry Pi Zero 2W**.
-<br><br>
+Ce projet consiste à concevoir un **robot autonome** capable de suivre une ligne tracée au sol.        
+
+Le robot utilise ses **capteurs** pour comprendre sa position et ajuste en permanence ses **moteurs** afin de ne pas tomber pendant le déplacement.
+
+L’ensemble du système est contrôlé par une **Raspberry Pi Zero 2W**, qui traite les informations et prend les décisions en temps réel.
+
+
+
+
 ---
 
 ## Fonctionnalités
