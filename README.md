@@ -46,11 +46,11 @@
 
 ## Présentation
 
-Ce projet consiste en la conception d’un **robot autonome suiveur de ligne** blablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablablabla
+Ce projet consiste en la conception d’un **robot autonome suiveur de ligne bipede** 
 
 <br>
-blablablablablablabla
-blablablablablablabla
+L'obectif est donc de faire un robot capable de suive une ligne tout en restant stable 
+La travail a fournir est une carte electronique,un driver unique capable de gerer tout les fonctions du robot et une boitier 3D.
 <br><br>
 ---
 
@@ -67,11 +67,11 @@ blablablablablablabla
         </p>
       </td>
       <td width="300" align="center" valign="top">
-        <h3>🧠 Estimation</h3>
+        <h3>🧠 Stabilisation </h3>
         <p>
           IMU (acc + gyro)<br/>
-          Filtrage prévu (fusion)<br/>
-          Données prêtes pour tuning
+          Filtrage <br/>
+          Donnée envoyer en I2C au MCU<br/>
         </p>
       </td>
       <td width="300" align="center" valign="top">
@@ -107,7 +107,6 @@ blablablablablablabla
       <p align="center">
         Acquisition → Filtrage → Estimation<br/>
         Contrôle (PID) → Commande moteurs<br/>
-        Logging → Analyse → Tuning
       </p>
     </td>
   </tr>
