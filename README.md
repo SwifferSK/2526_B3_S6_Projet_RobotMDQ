@@ -18,16 +18,24 @@
   <a href="https://discord.gg/eySWAjkd">
     <img src="https://img.shields.io/badge/Discord-Bachelor%20ENSEA-5865F2?style=for-the-badge&logo=discord&logoColor=white" />
   </a>
-  <a href="#demo">
+
+  <a href="https://www.youtube.com">
     <img src="https://img.shields.io/badge/Demo-%C3%80%20venir-111827?style=for-the-badge&logo=youtube&logoColor=white" />
   </a>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-In%20Progress-F59E0B?style=for-the-badge&logo=clock&logoColor=white" />
-  <img src="https://img.shields.io/badge/KiCad-9.0.7-2563EB?style=for-the-badge&logo=kicad&logoColor=white" />
+
+  <a href="https://www.kicad.org">
+    <img src="https://img.shields.io/badge/KiCad-9.0.7-2563EB?style=for-the-badge&logo=kicad&logoColor=white" />
+  </a>
+
   <img src="https://img.shields.io/badge/Type-Robotics-374151?style=for-the-badge&logo=gear&logoColor=white" />
-  <img src="https://img.shields.io/badge/Plateforme-RPi%20Zero%202W-111827?style=for-the-badge&logo=raspberrypi&logoColor=white" />
+
+  <a href="https://www.raspberrypi.com">
+    <img src="https://img.shields.io/badge/Plateforme-RPi%20Zero%202W-111827?style=for-the-badge&logo=raspberrypi&logoColor=white" />
+  </a>
 </p>
 
 ---
