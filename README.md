@@ -55,7 +55,7 @@
 
                               
 
-Ce projet consiste à concevoir un **robot autonome** capable de suivre une ligne tracée au sol.        
+Ce projet consiste à concevoir un **robot autonome bipède** capable de suivre une ligne tracée au sol.        
 
 Le robot utilise ses **capteurs** pour comprendre sa position et ajuste en permanence ses **moteurs** afin de ne pas tomber pendant le déplacement.
 
