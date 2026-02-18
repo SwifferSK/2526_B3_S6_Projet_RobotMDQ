@@ -3,7 +3,7 @@
 <!-- ===================================================== -->
 
 <p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&height=230&color=0:0d1117,100:111827&text=Robot%20Suiveur%20de%20Ligne&fontColor=E5E7EB&fontSize=44&fontAlign=50&fontAlignY=36&desc=Manel%20%E2%80%A2%20Damien%20%E2%80%A2%20Quentin%20%" width="100%" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&height=230&color=0:0d1117,100:111827&text=Robot%20Bipède%20Suiveur%20de%20Ligne&fontColor=E5E7EB&fontSize=44&fontAlign=50&fontAlignY=36&desc=Manel%20%E2%80%A2%20Damien%20%E2%80%A2%20Quentin%20%" width="100%" />
 </p>
 
 <p align="center">
