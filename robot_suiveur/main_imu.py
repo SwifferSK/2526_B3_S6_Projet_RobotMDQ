@@ -43,7 +43,7 @@ from motor.config import (
 # Si le robot penche, les moteurs vont tourner pour le rattraper.
 KP = 1.5               # Facteur de correction (augmente si le robot tombe trop vite sans réagir)
 KD = 0.05              # Facteur dérivé (utilise le gyroscope pour adoucir les réactions)
-TARGET_ANGLE = 0.0     # L'angle où le robot est parfaitement droit au repos
+TARGET_ANGLE = -90.0   # L'angle où le robot est parfaitement droit au repos
 LOOP_DELAY = 0.02      # Boucle très rapide (50Hz) indispensable pour l'équilibre
 MAX_SPEED = 60.0       # Vitesse max des moteurs en RPM pour éviter des commandes extrêmes
 
@@ -101,19 +101,18 @@ def main() -> None:
             angle_y = math.degrees(math.atan2(x_a * SF_2G, z_a * SF_2G))
             
             # --- Logique d'équilibrage ---
-            # On suppose que l'inclinaison avant/arrière correspond à l'axe Y (angle_y).
-            # Si c'est l'axe X sur ton montage, remplace 'angle_y' par 'angle_x' ici.
-            current_angle = angle_y
+            # On utilise l'axe X (angle_x) comme point d'équilibre.
+            current_angle = angle_x
             
-            # Le gyroscope donne la vitesse de rotation (dérivée). Sur l'axe Y:
-            gyro_y_dps = y_g * SF_200DPS
+            # Le gyroscope donne la vitesse de rotation (dérivée). Sur l'axe X:
+            gyro_x_dps = x_g * SF_200DPS
             
             # Erreur par rapport à l'équilibre parfait
             error = current_angle - TARGET_ANGLE
             
             # Calcul de la vitesse à envoyer aux roues (Correction Proportionnelle + Dérivée)
-            # Si le robot tombe en avant (angle positif), il doit avancer pour remettre les roues sous son centre de gravité.
-            correction_speed = (error * KP) + (gyro_y_dps * KD)
+            # Si le robot tombe en avant, il doit avancer pour remettre les roues sous son centre de gravité.
+            correction_speed = (error * KP) + (gyro_x_dps * KD)
             
             # Bridage de la vitesse max
             if correction_speed > MAX_SPEED:
@@ -127,8 +126,8 @@ def main() -> None:
             # Affichage ralenti pour ne pas inonder la console (1 fois toutes les 25 boucles -> ~2 fois par seconde)
             print_counter += 1
             if print_counter >= 25:
-                print(f"Inclinaison X: {angle_x:.2f}° | Y (Utilisé): {current_angle:.2f}° | Gyro: {gyro_y_dps:.2f} dps")
-                print(f"-> Vitesse Moteurs: {correction_speed:.2f} RPM")
+                print(f"Inclinaison X (Utilisé): {current_angle:.2f}° | Y: {angle_y:.2f}° | Gyro X: {gyro_x_dps:.2f} dps")
+                print(f"-> Vitesse Moteurs: {correction_speed:.2f} RPM | Erreur: {error:.2f}°")
                 print("-" * 50)
                 print_counter = 0
 
