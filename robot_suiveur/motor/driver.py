@@ -18,10 +18,6 @@ from .config import (
 
 
 class TMC2225:
-    """Very simple STEP/DIR stepper driver helper.
-
-    This toggles STEP with a computed delay based on RPM + steps_per_rev + microstep.
-    """
 
     def __init__(
         self,
@@ -32,8 +28,8 @@ class TMC2225:
         steps_per_rev: int = DEFAULT_STEPS_PER_REV,
         microstep: int = DEFAULT_MICROSTEP,
     ):
-        if GPIO is None:  # pragma: no cover
-            raise ImportError("RPi.GPIO is required on Raspberry Pi.")
+        if GPIO is None:  
+            raise ImportError("Pas de GPIO")
 
         self.step_pin = int(step_pin)
         self.dir_pin = int(dir_pin)
@@ -49,7 +45,7 @@ class TMC2225:
 
     def set_speed(self, speed_rpm: float) -> None:
         if speed_rpm <= 0:
-            raise ValueError("La vitesse (RPM) doit être positive")
+            raise ValueError("La vitesse doit être positive")
 
         self.speed_rpm = float(speed_rpm)
         total_steps_per_rev = self.steps_per_rev * self.microstep
@@ -70,10 +66,6 @@ class TMC2225:
             time.sleep(self.delay)
 
     def rotate(self, angle_deg: float) -> None:
-        """Rotate by an angle in degrees.
-
-        If angle_deg is negative, direction is temporarily inverted.
-        """
         angle = float(angle_deg)
         if angle == 0:
             return
