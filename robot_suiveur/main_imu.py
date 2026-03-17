@@ -41,9 +41,10 @@ from motor.config import (
 
 # --- Réglages Ultra Simples d'Équilibre ---
 # Si le robot penche, les moteurs vont tourner pour le rattraper.
-KP = 1.5               # Facteur de correction (augmente si le robot tombe trop vite sans réagir)
-KD = 0.05              # Facteur dérivé (utilise le gyroscope pour adoucir les réactions)
+KP = -1.5              # Négatif ! Car s'il tombait dans le sens de la chute, il faut l'inverser.
+KD = -0.05             # Négatif aussi pour que le gyroscope s'oppose au mouvement dans le même sens.
 TARGET_ANGLE = -90.0   # L'angle où le robot est parfaitement droit au repos
+DEADBAND = 5.0         # Zone morte (en degrés) autour de -90 où le robot ne fait rien (évite les tremblements)
 LOOP_DELAY = 0.02      # Boucle très rapide (50Hz) indispensable pour l'équilibre
 MAX_SPEED = 60.0       # Vitesse max des moteurs en RPM pour éviter des commandes extrêmes
 
@@ -110,9 +111,14 @@ def main() -> None:
             # Erreur par rapport à l'équilibre parfait
             error = current_angle - TARGET_ANGLE
             
-            # Calcul de la vitesse à envoyer aux roues (Correction Proportionnelle + Dérivée)
-            # Si le robot tombe en avant, il doit avancer pour remettre les roues sous son centre de gravité.
-            correction_speed = (error * KP) + (gyro_x_dps * KD)
+            # --- Zone morte (Deadband) ---
+            # Si l'erreur est toute petite (le robot est presque à -90°), on ignore pour éviter qu'il tremble
+            if abs(error) < DEADBAND:
+                correction_speed = 0.0
+            else:
+                # Calcul de la vitesse à envoyer aux roues (Correction Proportionnelle + Dérivée)
+                # Si le robot tombe en avant, il doit avancer pour remettre les roues sous son centre de gravité.
+                correction_speed = (error * KP) + (gyro_x_dps * KD)
             
             # Bridage de la vitesse max
             if correction_speed > MAX_SPEED:
