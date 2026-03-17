@@ -22,7 +22,6 @@ class TMC2225:
     """Very simple STEP/DIR stepper driver helper.
 
     This toggles STEP with a computed delay based on RPM + steps_per_rev + microstep.
-    Now supports continuous non-blocking rotation via a background thread.
     """
 
     def __init__(
@@ -34,8 +33,8 @@ class TMC2225:
         steps_per_rev: int = DEFAULT_STEPS_PER_REV,
         microstep: int = DEFAULT_MICROSTEP,
     ):
-        if GPIO is None:  # pragma: no cover
-            raise ImportError("RPi.GPIO is required on Raspberry Pi.")
+        if GPIO is None:  
+            raise ImportError("Pas de GPIO")
 
         self.step_pin = int(step_pin)
         self.dir_pin = int(dir_pin)
@@ -55,18 +54,8 @@ class TMC2225:
         self.set_speed(speed_rpm)
 
     def set_speed(self, speed_rpm: float) -> None:
-        """Définit la vitesse continue. Supporte les vitesses négatives pour la marche arrière."""
-        if speed_rpm == 0:
-            self.speed_rpm = 0.0
-            self.delay = 0.0
-            return
-
-        # Ajuster la direction selon le signe de la vitesse
-        if speed_rpm > 0:
-            self.set_direction(self.default_direction)
-        else:
-            opposite_direction = (DIRECTION_FORWARD + DIRECTION_BACKWARD) - self.default_direction
-            self.set_direction(opposite_direction)
+        if speed_rpm <= 0:
+            raise ValueError("La vitesse (RPM) doit être positive")
 
         self.speed_rpm = abs(speed_rpm)
         total_steps_per_rev = self.steps_per_rev * self.microstep
@@ -88,7 +77,10 @@ class TMC2225:
             time.sleep(self.delay)
 
     def rotate(self, angle_deg: float) -> None:
-        """Rotate by an angle in degrees (blocking)."""
+        """Rotate by an angle in degrees.
+
+        If angle_deg is negative, direction is temporarily inverted.
+        """
         angle = float(angle_deg)
         if angle == 0:
             return

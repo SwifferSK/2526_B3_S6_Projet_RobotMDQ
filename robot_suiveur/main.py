@@ -3,7 +3,7 @@
 Ce script :
 - lit les 8 capteurs IR via MCP3208
 - détecte la position de la ligne (left/center/right/none)
-- commande les 2 moteurs pas-à-pas en continu
+- commande les 2 moteurs pas-à-pas (STEP/DIR) via le module motor/
 
 Lance :
   python3 main.py
@@ -29,11 +29,12 @@ from motor.config import (
 
 # --- Réglages suiveur de ligne ---
 THRESHOLD = 1.5     # ajuste selon tes capteurs
+LOOP_DELAY = 0.0    # tu peux mettre 0.02 si tu veux ralentir la boucle
 
-# Vitesses continues en RPM
-BASE_SPEED = 9.375
-TURN_SPEED_REDUCTION = 0.2  # Réduction de vitesse pour la roue intérieure lors d'un virage
-SEARCH_SPEED = 5.0          # Vitesse de rotation sur soi-même quand la ligne est perdue
+# Angles de commande (plus petit = plus "doux")
+FORWARD_ANGLE = 5.0
+TURN_ANGLE = 3.0
+SEARCH_ANGLE = 2.0
 
 
 def main() -> None:
@@ -55,7 +56,7 @@ def main() -> None:
     )
 
     try:
-        print("Starting continuous line follower (Ctrl+C to stop)...")
+        print("Starting line follower (Ctrl+C to stop)...")
         motors.info()
         
         # Démarrer le mouvement continu en arrière-plan (moteurs initialement à 0)
@@ -66,8 +67,11 @@ def main() -> None:
             # detect_line s'occupe de lire les capteurs et introduit un mini délai de 0.05s
             pos = detect_line(adc, threshold=THRESHOLD, verbose=True)
 
-            # Stratégie de contrôle continu :
-            # On ne fait plus de "rotate" bloquant. On module directement la vitesse.
+            # Stratégie simple :
+            # - center : avance
+            # - left   : corrige à gauche (ralentit/recule un peu côté gauche ou avance côté droit)
+            # - right  : corrige à droite
+            # - none   : petite recherche
             if pos == "center":
                 # Avance tout droit
                 motors.set_speeds(BASE_SPEED, BASE_SPEED)
@@ -78,8 +82,11 @@ def main() -> None:
                 # Tourne à droite : moteur droit très lent, moteur gauche normal
                 motors.set_speeds(BASE_SPEED, BASE_SPEED * TURN_SPEED_REDUCTION)
             else:
-                # Aucun capteur ne voit la ligne : pivote sur lui-même pour chercher la ligne
-                motors.set_speeds(SEARCH_SPEED, -SEARCH_SPEED)
+                # Aucun capteur ne voit la ligne : mini balayage
+                motors.rotate_both(SEARCH_ANGLE, -SEARCH_ANGLE)
+
+            if LOOP_DELAY > 0:
+                time.sleep(LOOP_DELAY)
 
     except KeyboardInterrupt:
         print("\nStopped.")
