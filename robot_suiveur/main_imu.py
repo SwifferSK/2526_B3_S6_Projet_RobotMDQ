@@ -1,10 +1,10 @@
-"""Robot suiveur - Maintien du cap ultra simple.
+"""Robot suiveur - Maintien de l'équilibre ultra simple.
 
 Ce script :
 - Initialise les moteurs
 - Initialise l'IMU via drv_lsm6dsow
 - Affiche les informations de l'accéléromètre et du gyroscope
-- Avance tout droit en utilisant les données de l'accéléromètre (ou gyro) pour se corriger.
+- Essaie de maintenir le robot en équilibre (debout) en utilisant l'inclinaison.
 """
 
 from __future__ import annotations
@@ -39,10 +39,13 @@ from motor.config import (
     MOTOR2_DIRECTION,
 )
 
-# --- Réglages Ultra Simples ---
-BASE_SPEED = 10.0      # Vitesse des moteurs en RPM
-KP = 0.5               # Facteur de correction (0 si tu veux qu'il aille juste tout droit sans rien corriger)
-LOOP_DELAY = 0.5       # On ralentit la boucle pour bien lire les prints (comme app.py)
+# --- Réglages Ultra Simples d'Équilibre ---
+# Si le robot penche, les moteurs vont tourner pour le rattraper.
+KP = 1.5               # Facteur de correction (augmente si le robot tombe trop vite sans réagir)
+KD = 0.05              # Facteur dérivé (utilise le gyroscope pour adoucir les réactions)
+TARGET_ANGLE = 0.0     # L'angle où le robot est parfaitement droit au repos
+LOOP_DELAY = 0.02      # Boucle très rapide (50Hz) indispensable pour l'équilibre
+MAX_SPEED = 60.0       # Vitesse max des moteurs en RPM pour éviter des commandes extrêmes
 
 
 def main() -> None:
@@ -73,14 +76,16 @@ def main() -> None:
         print("Démarrage du robot. Ctrl+C pour arrêter.")
         motors.info()
         
-        # Moteurs en avant toute
-        motors.set_speeds(BASE_SPEED, BASE_SPEED)
+        # Moteurs initialisés à l'arrêt
+        motors.set_speeds(0, 0)
         motors.start_continuous()
         time.sleep(0.5)
 
-        # Variables pour le calcul du cap (lacet/yaw) basé sur le gyroscope
-        current_angle_z = 0.0
+        print("Début de l'équilibrage dans 1 seconde. Tenez le robot droit !")
+        time.sleep(1)
+
         last_time = time.time()
+        print_counter = 0
 
         while True:
             current_time = time.time()
@@ -95,27 +100,37 @@ def main() -> None:
             angle_x = math.degrees(math.atan2(y_a * SF_2G, z_a * SF_2G))
             angle_y = math.degrees(math.atan2(x_a * SF_2G, z_a * SF_2G))
             
-            # Affichage demandé (comme dans app.py)
-            print(f"Accel X: {(x_a * SF_2G):.2f}g, Y: {(y_a * SF_2G):.2f}g, Z: {(z_a * SF_2G):.2f}g | "
-                  f"Gyro X: {(x_g * SF_200DPS):.2f}dps, Y: {(y_g * SF_200DPS):.2f}dps, Z: {(z_g * SF_200DPS):.2f}dps")
-            print(f"Angle X: {angle_x:.2f}°, Angle Y: {angle_y:.2f}°")
-
-            # --- Correction ultra simple pour aller droit avec l'axe Z (Gyroscope lacet) ---
-            # L'accéléromètre ne peut pas calculer la boussole/lacet, on utilise le gyro Z.
-            gyro_z_dps = z_g * SF_200DPS
-            if abs(gyro_z_dps) < 1.0: 
-                gyro_z_dps = 0.0 # Ignorer le bruit
+            # --- Logique d'équilibrage ---
+            # On suppose que l'inclinaison avant/arrière correspond à l'axe Y (angle_y).
+            # Si c'est l'axe X sur ton montage, remplace 'angle_y' par 'angle_x' ici.
+            current_angle = angle_y
+            
+            # Le gyroscope donne la vitesse de rotation (dérivée). Sur l'axe Y:
+            gyro_y_dps = y_g * SF_200DPS
+            
+            # Erreur par rapport à l'équilibre parfait
+            error = current_angle - TARGET_ANGLE
+            
+            # Calcul de la vitesse à envoyer aux roues (Correction Proportionnelle + Dérivée)
+            # Si le robot tombe en avant (angle positif), il doit avancer pour remettre les roues sous son centre de gravité.
+            correction_speed = (error * KP) + (gyro_y_dps * KD)
+            
+            # Bridage de la vitesse max
+            if correction_speed > MAX_SPEED:
+                correction_speed = MAX_SPEED
+            elif correction_speed < -MAX_SPEED:
+                correction_speed = -MAX_SPEED
                 
-            current_angle_z += gyro_z_dps * dt
-
-            # Correction des moteurs (si l'angle est très différent de 0, on compense)
-            correction = current_angle_z * KP
+            # Envoi de la même vitesse aux deux moteurs
+            motors.set_speeds(correction_speed, correction_speed)
             
-            # On demande aux moteurs d'ajuster leur vitesse pour compenser la rotation
-            motors.set_speeds(BASE_SPEED - correction, BASE_SPEED + correction)
-            
-            print(f"Cap actuel (Z): {current_angle_z:.2f}° | Correction appliquée: {correction:.2f}")
-            print("-" * 50)
+            # Affichage ralenti pour ne pas inonder la console (1 fois toutes les 25 boucles -> ~2 fois par seconde)
+            print_counter += 1
+            if print_counter >= 25:
+                print(f"Inclinaison X: {angle_x:.2f}° | Y (Utilisé): {current_angle:.2f}° | Gyro: {gyro_y_dps:.2f} dps")
+                print(f"-> Vitesse Moteurs: {correction_speed:.2f} RPM")
+                print("-" * 50)
+                print_counter = 0
 
             time.sleep(LOOP_DELAY)
 
