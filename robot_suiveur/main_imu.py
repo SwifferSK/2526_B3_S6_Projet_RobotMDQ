@@ -41,11 +41,12 @@ from motor.config import (
 
 # --- Réglages Ultra Simples d'Équilibre ---
 # Si le robot penche, les moteurs vont tourner pour le rattraper.
-KP = -1.5              # Négatif ! Car s'il tombait dans le sens de la chute, il faut l'inverser.
-KD = -0.05             # Négatif aussi pour que le gyroscope s'oppose au mouvement dans le même sens.
+KP = 1.5               # Positif ! Car l'erreur est désormais (Target - Current)
+KD = 0.05              # Positif pour que le gyroscope s'oppose aux variations
 TARGET_ANGLE = -90.0   # L'angle où le robot est parfaitement droit au repos
-DEADBAND = 5.0         # Zone morte (en degrés) autour de -90 où le robot ne fait rien (évite les tremblements)
-LOOP_DELAY = 0.02      # Boucle très rapide (50Hz) indispensable pour l'équilibre
+DEADBAND = 2.0         # Zone morte (en degrés) autour de -90 où le robot ne fait rien (évite les tremblements)
+FC = 50.0              # Fréquence de coupure du filtre passe-bas (Hz)
+LOOP_DELAY = 0.01      # Boucle plus rapide (100Hz) pour un bon échantillonnage avec un filtre à 50Hz
 MAX_SPEED = 60.0       # Vitesse max des moteurs en RPM pour éviter des commandes extrêmes
 
 
@@ -85,12 +86,17 @@ def main() -> None:
         print("Début de l'équilibrage dans 1 seconde. Tenez le robot droit !")
         time.sleep(1)
 
+        # Variable pour le filtre passe-bas
+        filtered_angle_x = -90.0
         last_time = time.time()
         print_counter = 0
 
         while True:
             current_time = time.time()
             dt = current_time - last_time
+            # Sécurité anti-zéro pour la première boucle
+            if dt <= 0:
+                dt = 0.001
             last_time = current_time
 
             # Lecture IMU (même chose que dans app.py)
@@ -101,24 +107,32 @@ def main() -> None:
             angle_x = math.degrees(math.atan2(y_a * SF_2G, z_a * SF_2G))
             angle_y = math.degrees(math.atan2(x_a * SF_2G, z_a * SF_2G))
             
+            # --- Filtre Passe-Bas (Low-Pass Filter) ---
+            # Constante de temps RC = 1 / (2*pi*fc)
+            rc = 1.0 / (2.0 * math.pi * FC)
+            alpha = dt / (rc + dt)
+            filtered_angle_x = (alpha * angle_x) + ((1.0 - alpha) * filtered_angle_x)
+
             # --- Logique d'équilibrage ---
-            # On utilise l'axe X (angle_x) comme point d'équilibre.
-            current_angle = angle_x
+            # On utilise l'angle filtré pour la stabilité
+            current_angle = filtered_angle_x
             
             # Le gyroscope donne la vitesse de rotation (dérivée). Sur l'axe X:
             gyro_x_dps = x_g * SF_200DPS
             
-            # Erreur par rapport à l'équilibre parfait
-            error = current_angle - TARGET_ANGLE
+            # Formule d'erreur Inverse : Target - Current
+            error = TARGET_ANGLE - current_angle
             
             # --- Zone morte (Deadband) ---
-            # Si l'erreur est toute petite (le robot est presque à -90°), on ignore pour éviter qu'il tremble
+            # Si l'erreur est toute petite, on ignore pour éviter qu'il tremble
             if abs(error) < DEADBAND:
                 correction_speed = 0.0
             else:
                 # Calcul de la vitesse à envoyer aux roues (Correction Proportionnelle + Dérivée)
-                # Si le robot tombe en avant, il doit avancer pour remettre les roues sous son centre de gravité.
-                correction_speed = (error * KP) + (gyro_x_dps * KD)
+                # Remarque: gyro_x_dps n'a pas besoin d'être soustrait vu qu'il est la dérivée de current,
+                # mais si on utilise (Target - Current), pour s'opposer, la dérivée de l'erreur est : (0 - vitesse) = -vitesse.
+                # On utilise + ou - selon la définition du repère. A ajuster si le robot oscille trop.
+                correction_speed = (error * KP) - (gyro_x_dps * KD)
             
             # Bridage de la vitesse max
             if correction_speed > MAX_SPEED:
