@@ -120,8 +120,10 @@ def main() -> None:
             elif correction_speed < -MAX_SPEED:
                 correction_speed = -MAX_SPEED
                 
-            # Envoi de la même vitesse aux deux moteurs
-            motors.set_speeds(correction_speed, correction_speed)
+            # Les moteurs pas-à-pas sont souvent montés en miroir sur un robot 2 roues.
+            # Pour avancer droit, un moteur doit tourner en sens horaire (positif) et l'autre en anti-horaire (négatif).
+            # Si le robot tourne sur lui-même au lieu d'avancer/reculer, on inverse le signe d'un des deux.
+            motors.set_speeds(correction_speed, -correction_speed)
             
             # Affichage ralenti pour ne pas inonder la console (1 fois toutes les 25 boucles -> ~2 fois par seconde)
             print_counter += 1
