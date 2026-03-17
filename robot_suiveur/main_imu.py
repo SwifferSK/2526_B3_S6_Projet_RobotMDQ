@@ -63,13 +63,11 @@ def main() -> None:
         motor1_params={
             "step": MOTOR1_STEP_PIN,
             "dir": MOTOR1_DIR_PIN,
-            "speed_rpm": MOTOR1_SPEED_RPM,
             "direction": MOTOR1_DIRECTION,
         },
         motor2_params={
             "step": MOTOR2_STEP_PIN,
             "dir": MOTOR2_DIR_PIN,
-            "speed_rpm": MOTOR2_SPEED_RPM,
             "direction": MOTOR2_DIRECTION,
         },
     )
@@ -145,15 +143,19 @@ def main() -> None:
             # Si le robot tourne sur lui-même au lieu d'avancer/reculer, on inverse le signe d'un des deux.
             motors.set_speeds(correction_speed, -correction_speed)
             
-            # Affichage ralenti pour ne pas inonder la console (1 fois toutes les 25 boucles -> ~2 fois par seconde)
+            # Affichage ralenti pour ne pas inonder la console (1 fois toutes les 10 boucles -> ~10 fois par seconde)
             print_counter += 1
-            if print_counter >= 25:
-                print(f"Inclinaison X (Utilisé): {current_angle:.2f}° | Y: {angle_y:.2f}° | Gyro X: {gyro_x_dps:.2f} dps")
+            if print_counter >= 10:
+                print(f"Inclinaison X (Utilisé): {current_angle:.2f}° | Gyro X: {gyro_x_dps:.2f} dps")
                 print(f"-> Vitesse Moteurs: {correction_speed:.2f} RPM | Erreur: {error:.2f}°")
                 print("-" * 50)
                 print_counter = 0
 
-            time.sleep(LOOP_DELAY)
+            # On attend le temps restant pour avoir exactement 100Hz
+            time_spent = time.time() - current_time
+            sleep_time = LOOP_DELAY - time_spent
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
     except KeyboardInterrupt:
         print("\nArrêt manuel.")
