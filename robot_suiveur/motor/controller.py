@@ -30,13 +30,23 @@ class DualMotorController:
             microstep=motor2_params.get("microstep", DEFAULT_MICROSTEP),
         )
 
+    def start_continuous(self) -> None:
+        """Démarrer les threads des deux moteurs pour le mouvement continu non-bloquant."""
+        self.motor1.start_continuous()
+        self.motor2.start_continuous()
+
+    def set_speeds(self, speed_rpm1: float, speed_rpm2: float) -> None:
+        """Définir la vitesse de chaque moteur (positif = avant, négatif = arrière)."""
+        self.motor1.set_speed(speed_rpm1)
+        self.motor2.set_speed(speed_rpm2)
+
     def rotate_both(self, angle1: float, angle2: float) -> None:
-        """Rotate motors with independent angles."""
+        """Rotate motors with independent angles (blocking)."""
         self.motor1.rotate(angle1)
         self.motor2.rotate(angle2)
 
     def rotate_sync(self, angle: float, inverse: bool = False) -> None:
-        """Rotate both motors by the same angle.
+        """Rotate both motors by the same angle (blocking).
 
         If inverse=True, motor2 temporarily uses opposite direction.
         """
@@ -53,6 +63,8 @@ class DualMotorController:
             self.motor2.set_direction(opposite_direction)
 
     def stop_all(self) -> None:
+        """Arrête les moteurs et nettoie les GPIO."""
+        self.set_speeds(0, 0)
         self.motor1.cleanup()
         self.motor2.cleanup()
 
