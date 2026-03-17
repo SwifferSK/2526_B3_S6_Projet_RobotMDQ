@@ -54,10 +54,18 @@ class TMC2225:
         self.set_speed(speed_rpm)
 
     def set_speed(self, speed_rpm: float) -> None:
-        if speed_rpm <= 0:
-            raise ValueError("La vitesse (RPM) doit être positive")
+        if speed_rpm < 0:
+            dir_val = DIRECTION_BACKWARD if self.default_direction == DIRECTION_FORWARD else DIRECTION_FORWARD
+            self.set_direction(dir_val)
+        elif speed_rpm > 0:
+            self.set_direction(self.default_direction)
 
         self.speed_rpm = abs(speed_rpm)
+        if self.speed_rpm == 0:
+            self.freq = 0.0
+            self.delay = 0.0
+            return
+
         total_steps_per_rev = self.steps_per_rev * self.microstep
         self.freq = (self.speed_rpm * total_steps_per_rev) / 60.0
         self.delay = 1.0 / (2.0 * self.freq) if self.freq > 0 else 0.0

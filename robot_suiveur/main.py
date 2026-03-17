@@ -36,6 +36,9 @@ FORWARD_ANGLE = 5.0
 TURN_ANGLE = 3.0
 SEARCH_ANGLE = 2.0
 
+BASE_SPEED = 10.0
+TURN_SPEED_REDUCTION = 0.5
+
 
 def main() -> None:
     adc = MCP3208(vref=3.3)
@@ -82,8 +85,9 @@ def main() -> None:
                 # Tourne à droite : moteur droit très lent, moteur gauche normal
                 motors.set_speeds(BASE_SPEED, BASE_SPEED * TURN_SPEED_REDUCTION)
             else:
-                # Aucun capteur ne voit la ligne : mini balayage
-                motors.rotate_both(SEARCH_ANGLE, -SEARCH_ANGLE)
+                # Aucun capteur ne voit la ligne : tourne sur lui-même (balayage)
+                # On utilise set_speeds pour ne pas bloquer avec la boucle en arrière-plan
+                motors.set_speeds(BASE_SPEED * 0.5, -BASE_SPEED * 0.5)
 
             if LOOP_DELAY > 0:
                 time.sleep(LOOP_DELAY)
