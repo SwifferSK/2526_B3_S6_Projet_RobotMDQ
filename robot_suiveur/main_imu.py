@@ -31,11 +31,9 @@ from motor.controller import DualMotorController
 from motor.config import (
     MOTOR1_STEP_PIN,
     MOTOR1_DIR_PIN,
-    MOTOR1_SPEED_RPM,
     MOTOR1_DIRECTION,
     MOTOR2_STEP_PIN,
     MOTOR2_DIR_PIN,
-    MOTOR2_SPEED_RPM,
     MOTOR2_DIRECTION,
 )
 
