@@ -1,19 +1,30 @@
-"""Robot suiveur - Maintien du cap avec IMU (Gyroscope).
+"""Robot suiveur - Maintien du cap ultra simple.
 
 Ce script :
 - Initialise les moteurs
-- Initialise l'IMU (LSM6DSOX)
-- Utilise le gyroscope (axe Z) pour calculer l'angle de lacet (yaw)
-- Ajuste la vitesse des moteurs gauche/droit pour maintenir un cap de 0°
-
-Lance :
-  python3 main_imu.py
+- Initialise l'IMU via drv_lsm6dsow
+- Affiche les informations de l'accéléromètre et du gyroscope
+- Avance tout droit en utilisant les données de l'accéléromètre (ou gyro) pour se corriger.
 """
 
 from __future__ import annotations
 
 import time
 import sys
+import os
+import math
+
+# Ajout du dossier 'imu' au chemin pour pouvoir importer drv_lsm6dsow et setting tels quels
+sys.path.append(os.path.join(os.path.dirname(__file__), "imu"))
+
+# Import de l'IMU (exactement comme dans app.py)
+try:
+    from drv_lsm6dsow import *
+    from setting import *
+except ImportError as e:
+    print(f"Erreur d'import : {e}")
+    print("Normal sur Windows. À tester sur Raspberry Pi.")
+    sys.exit(1)
 
 # Import des modules moteurs
 from motor.controller import DualMotorController
@@ -28,30 +39,18 @@ from motor.config import (
     MOTOR2_DIRECTION,
 )
 
-# Import de l'IMU
-try:
-    from imu.drv_lsm6dsow import drv_lsm6dsow
-    from imu.setting import SF_200DPS
-except ImportError:
-    print("Erreur : Impossible d'importer les modules IMU.")
-    print("Assurez-vous que les dépendances (smbus2, etc.) sont installées.")
-    sys.exit(1)
-
-# --- Réglages de la navigation au gyroscope ---
-BASE_SPEED = 10.0      # Vitesse de base en RPM
-KP = 0.5               # Coefficient proportionnel pour corriger la trajectoire
-                       # (Augmenter si le robot ne corrige pas assez, diminuer s'il oscille)
-
-LOOP_DELAY = 0.02      # Pause à chaque itération (Hz = 1/0.02 = 50Hz)
+# --- Réglages Ultra Simples ---
+BASE_SPEED = 10.0      # Vitesse des moteurs en RPM
+KP = 0.5               # Facteur de correction (0 si tu veux qu'il aille juste tout droit sans rien corriger)
+LOOP_DELAY = 0.5       # On ralentit la boucle pour bien lire les prints (comme app.py)
 
 
 def main() -> None:
-    # Initialisation de l'IMU
     print("Initialisation de l'IMU...")
     try:
-        imu = drv_lsm6dsow(bus=1)
+        driver = drv_lsm6dsow(bus=1)
     except Exception as e:
-        print(f"Erreur lors de la connexion à l'IMU : {e}")
+        print(f"Erreur IMU : {e}")
         return
 
     # Initialisation des moteurs
@@ -71,71 +70,61 @@ def main() -> None:
     )
 
     try:
-        print("Starting IMU straight line navigation (Ctrl+C to stop)...")
+        print("Démarrage du robot. Ctrl+C pour arrêter.")
         motors.info()
         
-        # Démarrer le mouvement continu (moteurs initialement à 0)
-        motors.set_speeds(0, 0)
+        # Moteurs en avant toute
+        motors.set_speeds(BASE_SPEED, BASE_SPEED)
         motors.start_continuous()
+        time.sleep(0.5)
 
+        # Variables pour le calcul du cap (lacet/yaw) basé sur le gyroscope
         current_angle_z = 0.0
         last_time = time.time()
-
-        # Petite pause pour laisser l'IMU se stabiliser
-        time.sleep(0.5)
 
         while True:
             current_time = time.time()
             dt = current_time - last_time
             last_time = current_time
 
-            # Lecture du gyroscope
-            x_g, y_g, z_g = imu.read_gyro()
+            # Lecture IMU (même chose que dans app.py)
+            x_a, y_a, z_a = driver.read_accel()
+            x_g, y_g, z_g = driver.read_gyro()
             
-            # Conversion de la valeur brute de l'axe Z en dps (degrés par seconde)
-            # Attention : Selon l'orientation physique de l'IMU sur le robot,
-            # il se peut que tu doives utiliser un autre axe (x ou y) ou inverser le signe.
+            # Calcul des angles d'inclinaison avec l'accéléromètre (Pitch / Roll)
+            angle_x = math.degrees(math.atan2(y_a * SF_2G, z_a * SF_2G))
+            angle_y = math.degrees(math.atan2(x_a * SF_2G, z_a * SF_2G))
+            
+            # Affichage demandé (comme dans app.py)
+            print(f"Accel X: {(x_a * SF_2G):.2f}g, Y: {(y_a * SF_2G):.2f}g, Z: {(z_a * SF_2G):.2f}g | "
+                  f"Gyro X: {(x_g * SF_200DPS):.2f}dps, Y: {(y_g * SF_200DPS):.2f}dps, Z: {(z_g * SF_200DPS):.2f}dps")
+            print(f"Angle X: {angle_x:.2f}°, Angle Y: {angle_y:.2f}°")
+
+            # --- Correction ultra simple pour aller droit avec l'axe Z (Gyroscope lacet) ---
+            # L'accéléromètre ne peut pas calculer la boussole/lacet, on utilise le gyro Z.
             gyro_z_dps = z_g * SF_200DPS
-
-            # Si le robot est à l'arrêt, le capteur bruit un peu.
-            # On peut mettre un petit seuil (deadband) pour éviter la dérive
-            if abs(gyro_z_dps) < 1.0:
-                gyro_z_dps = 0.0
-
-            # Intégration pour obtenir l'angle (Yaw)
+            if abs(gyro_z_dps) < 1.0: 
+                gyro_z_dps = 0.0 # Ignorer le bruit
+                
             current_angle_z += gyro_z_dps * dt
 
-            # Calcul de l'erreur (on veut que l'angle reste à 0)
-            error = 0.0 - current_angle_z
-
-            # Terme proportionnel
-            correction = error * KP
-
-            # Calcul des vitesses pour chaque moteur
-            # Si le robot a tourné à droite (angle négatif -> erreur positive),
-            # correction est positive -> on accélère le moteur droit et ralentit le gauche (ou inversement selon le montage)
-            # Note : Assure-toi que MOTOR1 (ex: gauche) et MOTOR2 (ex: droit) correspondent bien!
-            # Si le robot tourne du mauvais côté lors de la correction, il suffira d'inverser les signes de 'correction' ici :
-            speed_motor1 = BASE_SPEED - correction
-            speed_motor2 = BASE_SPEED + correction
-
-            # On s'assure que la vitesse ne devienne pas négative de façon inattendue (ou qu'elle reste dans des limites)
-            # Si on veut autoriser le robot à freiner complètement ou tourner en marche arrière, on garde tel quel (driver adapté)
-            # Sinon on bride : max(0, min(speed_motor, MAX_SPEED))
+            # Correction des moteurs (si l'angle est très différent de 0, on compense)
+            correction = current_angle_z * KP
             
-            motors.set_speeds(speed_motor1, speed_motor2)
-
-            # Debugging optionnel (dé-commenter pour voir les valeurs)
-            # print(f"Angle Z: {current_angle_z:.2f}° | Z_dps: {gyro_z_dps:.2f} | M1: {speed_motor1:.2f} | M2: {speed_motor2:.2f}")
+            # On demande aux moteurs d'ajuster leur vitesse pour compenser la rotation
+            motors.set_speeds(BASE_SPEED - correction, BASE_SPEED + correction)
+            
+            print(f"Cap actuel (Z): {current_angle_z:.2f}° | Correction appliquée: {correction:.2f}")
+            print("-" * 50)
 
             time.sleep(LOOP_DELAY)
 
     except KeyboardInterrupt:
-        print("\nStopped.")
+        print("\nArrêt manuel.")
     finally:
         try:
             motors.stop_all()
-        except Exception:
+        except:
             pass
 
 
