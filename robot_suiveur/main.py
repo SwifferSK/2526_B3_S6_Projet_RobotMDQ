@@ -19,11 +19,9 @@ from motor.controller import DualMotorController
 from motor.config import (
     MOTOR1_STEP_PIN,
     MOTOR1_DIR_PIN,
-    MOTOR1_SPEED_RPM,
     MOTOR1_DIRECTION,
     MOTOR2_STEP_PIN,
     MOTOR2_DIR_PIN,
-    MOTOR2_SPEED_RPM,
     MOTOR2_DIRECTION,
 )
 
@@ -47,13 +45,11 @@ def main() -> None:
         motor1_params={
             "step": MOTOR1_STEP_PIN,
             "dir": MOTOR1_DIR_PIN,
-            "speed_rpm": MOTOR1_SPEED_RPM,
             "direction": MOTOR1_DIRECTION,
         },
         motor2_params={
             "step": MOTOR2_STEP_PIN,
             "dir": MOTOR2_DIR_PIN,
-            "speed_rpm": MOTOR2_SPEED_RPM,
             "direction": MOTOR2_DIRECTION,
         },
     )
