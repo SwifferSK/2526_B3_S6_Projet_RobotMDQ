@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 try:
-    import spidev  # type: ignore
-except ImportError:  # pragma: no cover
+    import spidev 
+except ImportError: 
     spidev = None
 
 BIT_START = 4
