@@ -31,15 +31,10 @@ class DualMotorController:
         )
 
     def rotate_both(self, angle1: float, angle2: float) -> None:
-        """Rotate motors with independent angles."""
         self.motor1.rotate(angle1)
         self.motor2.rotate(angle2)
 
     def rotate_sync(self, angle: float, inverse: bool = False) -> None:
-        """Rotate both motors by the same angle.
-
-        If inverse=True, motor2 temporarily uses opposite direction.
-        """
         if inverse:
             opposite_direction = (DIRECTION_FORWARD + DIRECTION_BACKWARD) - self.motor2.direction
             self.motor2.set_direction(opposite_direction)
