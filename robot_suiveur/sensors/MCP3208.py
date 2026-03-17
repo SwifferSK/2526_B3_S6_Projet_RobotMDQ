@@ -1,13 +1,8 @@
-"""MCP3208 ADC (SPI) helper.
-
-Channels: 0..7 (CH0..CH7)
-"""
-
 from __future__ import annotations
 
 try:
-    import spidev  # type: ignore
-except ImportError:  # pragma: no cover
+    import spidev 
+except ImportError: 
     spidev = None
 
 BIT_START = 4
