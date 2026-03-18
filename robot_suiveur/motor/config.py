@@ -37,6 +37,14 @@ LINE_KD: float = 0.5
 # ── Filtre complémentaire IMU ──────────────────────────────────────────────────
 ALPHA: float = 0.98
 
+# Filtre EMA de sortie sur l'angle IMU (attenuation vibrations steppers)
+# 0.0 = pas de filtre, 0.5 = moyen, 0.7 = fort (ajoute un peu de lag)
+OUTPUT_BETA: float = 0.5
+
+# Zone morte (deadband) — ignore les erreurs d'angle inférieures à cette valeur
+# Evite les micro-corrections qui amplifient les vibrations
+DEADBAND_DEG: float = 0.5
+
 # Décalage mécanique en degrés (mesurer avec --calibrate sur sol plat)
 ANGLE_OFFSET: float = 0.0
 

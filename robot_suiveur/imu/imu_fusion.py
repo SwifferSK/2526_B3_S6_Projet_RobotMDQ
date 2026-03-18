@@ -39,11 +39,13 @@ _SAMPLE_RATE = 104.0
 
 
 class IMUFusion:
-    """Filtre complémentaire gyro+accél → angle de tangage en degrés.
+    """Filtre complémentaire gyro+accél + filtre passe-bas de sortie.
 
     Args:
-        alpha: Poids du gyroscope (0.95–0.99). Plus grand = moins
-               de dérive mais plus sensible aux vibrations.
+        alpha: Poids du gyroscope dans le filtre complémentaire (0.95–0.99).
+        output_beta: Coefficient du filtre passe-bas de sortie (EMA).
+                     0.0 = pas de filtrage, 0.5 = attenuation forte des HF.
+                     Une valeur de 0.5–0.7 élimine le bruit des vibrations steppers.
         angle_offset: Décalage mécanique à soustraire (calibrer sur sol plat).
         i2c_bus: Bus I2C (1 sur Raspberry Pi).
         address: Adresse I2C du LSM6DSOW (0x6A ou 0x6B).
@@ -52,15 +54,18 @@ class IMUFusion:
     def __init__(
         self,
         alpha: float = 0.98,
+        output_beta: float = 0.5,
         angle_offset: float = 0.0,
         i2c_bus: int = _I2C_BUS,
         address: int = _LSM6DSOW_ADDR,
     ) -> None:
         self.alpha = float(alpha)
+        self.output_beta = float(output_beta)   # EMA de sortie (bruit HF steppers)
         self.angle_offset = float(angle_offset)
         self._bus = smbus2.SMBus(i2c_bus)
         self._addr = address
-        self._angle: float = 0.0
+        self._angle: float = 0.0           # angle brut du filtre complémentaire
+        self._filtered_angle: float = 0.0  # angle lissé par EMA de sortie
         self._last_time: float = time.monotonic()
 
         self._init_sensor()
@@ -114,13 +119,20 @@ class IMUFusion:
         # atan2(-ax, az) suppose que az=1 g quand le robot est vertical
         accel_angle = math.degrees(math.atan2(-ax, az))
 
-        # Intégration gyroscopique + fusion
+        # Filtre complémentaire gyro + accél
         self._angle = (
             self.alpha * (self._angle + gy * dt)
             + (1.0 - self.alpha) * accel_angle
         )
 
-        return self._angle - self.angle_offset
+        # Filtre EMA de sortie — élimine le bruit haute fréquence des vibrations
+        # beta=0 : pas de filtrage   beta=0.7 : lissage fort
+        raw = self._angle - self.angle_offset
+        self._filtered_angle = (
+            self.output_beta * self._filtered_angle
+            + (1.0 - self.output_beta) * raw
+        )
+        return self._filtered_angle
 
     def calibrate_offset(self, samples: int = 100) -> float:
         """Mesure l'offset mécanique en tenant le robot en position debout.

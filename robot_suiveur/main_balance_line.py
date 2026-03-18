@@ -24,7 +24,7 @@ from motor.config import (
     MAX_SPEED_RPM,
     BALANCE_KP, BALANCE_KI, BALANCE_KD,
     LINE_KP, LINE_KI, LINE_KD,
-    ALPHA, ANGLE_OFFSET,
+    ALPHA, OUTPUT_BETA, ANGLE_OFFSET, DEADBAND_DEG,
     LINE_THRESHOLD, SEARCH_SPEED_RPM,
 )
 from control.pid import PID
@@ -48,7 +48,7 @@ def build_motors() -> DualMotorController:
 # ── Boucle principale ──────────────────────────────────────────────────────────
 def run(balance_only: bool = False) -> None:
     print("Initialisation de l'IMU…")
-    imu = IMUFusion(alpha=ALPHA, angle_offset=ANGLE_OFFSET)
+    imu = IMUFusion(alpha=ALPHA, output_beta=OUTPUT_BETA, angle_offset=ANGLE_OFFSET)
 
     adc = MCP3208(vref=3.3) if not balance_only else None
     motors = build_motors()
@@ -112,7 +112,9 @@ def run(balance_only: bool = False) -> None:
                 last_time = time.monotonic()  # évite un grand dt au redémarrage
                 continue
 
-            speed_cmd = balance_pid.compute(error=angle, dt=dt)
+            # Deadband : ignore les micro-erreurs (bruit résiduel des steppers)
+            angle_for_pid = 0.0 if abs(angle) < DEADBAND_DEG else angle
+            speed_cmd = balance_pid.compute(error=angle_for_pid, dt=dt)
 
             # ── Lecture capteurs IR + PID ligne ─────────────────────────────
             if not balance_only and adc is not None:
@@ -140,6 +142,7 @@ def run(balance_only: bool = False) -> None:
                 last_display = now2
                 _print_telemetry(
                     angle=angle,
+                    angle_for_pid=angle_for_pid,
                     speed_cmd=speed_cmd,
                     steer_cmd=steer_cmd,
                     speed_left=speed_left,
@@ -161,6 +164,7 @@ def run(balance_only: bool = False) -> None:
 # ── Télémétrie ─────────────────────────────────────────────────────────────────
 def _print_telemetry(
     angle: float,
+    angle_for_pid: float,
     speed_cmd: float,
     steer_cmd: float,
     speed_left: float,
@@ -171,19 +175,21 @@ def _print_telemetry(
     balance_only: bool,
 ) -> None:
     """Affiche une ligne de télémétrie sur stdout (rafraîchissement en place)."""
-    line_str = f"LINE_ERR={line_err:+.2f}" if line_err is not None else "LINE_ERR=None "
+    line_str = f"LINE={line_err:+.2f}" if line_err is not None else "LINE=None"
     mode_str = "BAL" if balance_only else "BAL+LINE"
+    # * indique que la deadband est active (PID reçoit 0 au lieu de l'angle réel)
+    db_str = "*DB*" if angle_for_pid == 0.0 and angle != 0.0 else "    "
 
     msg = (
         f"[{mode_str}] "
-        f"Angle={angle:+6.2f}°  "
+        f"Angle={angle:+6.2f}°{db_str}  "
+        f"PID_in={angle_for_pid:+5.2f}°  "
         f"PID_out={speed_cmd:+6.1f}RPM  "
         f"Steer={steer_cmd:+5.1f}  "
-        f"L={speed_left:+6.1f}RPM  R={speed_right:+6.1f}RPM  "
+        f"L={speed_left:+6.1f}  R={speed_right:+6.1f}  "
         f"{line_str}  "
-        f"dt={dt*1000:.1f}ms  Hz={actual_hz:.0f}"
+        f"dt={dt*1000:.1f}ms Hz={actual_hz:.0f}"
     )
-    # \r pour réécrire sur la même ligne (terminal compatible ANSI)
     print(f"\r{msg}", end="", flush=True)
 
 
