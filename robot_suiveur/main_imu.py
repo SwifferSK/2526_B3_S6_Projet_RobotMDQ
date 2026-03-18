@@ -110,7 +110,7 @@ def main() -> None:
             # IMPORTANT: Si le gyroscope ne va pas dans le même sens que l'accéléromètre,
             # le filtre complémentaire "détruit" l'angle et le PID compense à l'envers.
             # Mettre INVERT_GYRO = -1.0 si le robot devient fou en tombant d'un côté !
-            INVERT_GYRO = 1.0
+            INVERT_GYRO = -1.0
             gyro_x_dps = x_g * SF_200DPS * INVERT_GYRO
 
             # --- Filtre Complémentaire (Complementary Filter) ---
@@ -150,8 +150,9 @@ def main() -> None:
                 correction_speed = -MAX_SPEED
                 
             # Les moteurs pas-à-pas sont souvent montés en miroir sur un robot 2 roues.
-            # Inversion des signes pour que le robot compense dans le bon sens et "rattrape" sa chute.
-            motors.set_speeds(correction_speed, -correction_speed)
+            # Étant donné que le robot réagissait à l'envers (il reculait quand il tombait en avant),
+            # nous inversons les signes de la correction pour le forcer à "rattraper" sa chute !
+            motors.set_speeds(-correction_speed, correction_speed)
             
             # Affichage ralenti pour ne pas inonder la console (1 fois toutes les 10 boucles -> ~10 fois par seconde)
             print_counter += 1
