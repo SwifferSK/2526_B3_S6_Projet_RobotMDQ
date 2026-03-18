@@ -110,7 +110,7 @@ def main() -> None:
             # IMPORTANT: Si le gyroscope ne va pas dans le même sens que l'accéléromètre,
             # le filtre complémentaire "détruit" l'angle et le PID compense à l'envers.
             # Mettre INVERT_GYRO = -1.0 si le robot devient fou en tombant d'un côté !
-            INVERT_GYRO = -1.0
+            INVERT_GYRO = 1.0
             gyro_x_dps = x_g * SF_200DPS * INVERT_GYRO
 
             # --- Filtre Complémentaire (Complementary Filter) ---
