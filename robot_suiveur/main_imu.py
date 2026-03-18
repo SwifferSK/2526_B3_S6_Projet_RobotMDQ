@@ -39,15 +39,15 @@ from motor.config import (
 
 # --- Réglages Ultra Simples d'Équilibre ---
 # Si le robot penche, les moteurs vont tourner pour le rattraper.
-KP = 1.5               # Positif ! Car l'erreur est désormais (Target - Current)
-KD = 0.05              # Positif pour que le gyroscope s'oppose aux variations
-KI = 0.0               # Nouveau: Compense un centre de gravité imparfait (Laisse à 0.0 le temps de régler KP et KD)
-TARGET_ANGLE = -90.0   # L'angle où le robot est parfaitement droit au repos
-DEADBAND = 0.0         # 0 pour un équilibre parfait, on veut qu'il corrige immédiatement
-MAX_INTEGRAL = 100.0   # Limite pour empêcher l'intégrale d'exploser si on tient le robot à la main (Anti-windup)
-ALPHA = 0.98           # Coefficient du filtre complémentaire (0.98 = 98% gyro, 2% inclinaison accélérateur)
-LOOP_DELAY = 0.01      # Boucle plus rapide (100Hz) pour un bon échantillonnage
-MAX_SPEED = 60.0       # Vitesse max des moteurs en RPM pour éviter des commandes extrêmes
+KP = 3              # Augmenté de 1.5 à 10.0 pour plus de nervosité
+KD = 0.05              # Amortissement (à ajuster si ça vibre trop)
+KI = 0.0               # Toujours à 0
+TARGET_ANGLE = -90.0   # Point d'équilibre
+DEADBAND = 0.0         
+MAX_INTEGRAL = 100.0   
+ALPHA = 0.98           
+LOOP_DELAY = 0.01      
+MAX_SPEED = 300.0      # Augmenté de 60 à 300 RPM pour plus de puissance
 
 
 def main() -> None:
