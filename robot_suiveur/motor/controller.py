@@ -37,8 +37,9 @@ class DualMotorController:
 
     def set_speeds(self, speed_rpm1: float, speed_rpm2: float) -> None:
         """Définir la vitesse de chaque moteur (positif = avant, négatif = arrière)."""
-        self.motor1.set_speed(speed_rpm1)
-        self.motor2.set_speed(speed_rpm2)
+        # Inversion globale de la commande moteur directement à la source
+        self.motor1.set_speed(-speed_rpm1)
+        self.motor2.set_speed(-speed_rpm2)
 
     def rotate_both(self, angle1: float, angle2: float) -> None:
         """Rotate motors with independent angles."""
