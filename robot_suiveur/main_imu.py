@@ -39,7 +39,7 @@ from motor.config import (
 
 # --- Réglages Ultra Simples d'Équilibre ---
 # Si le robot penche, les moteurs vont tourner pour le rattraper.
-KP = 5              # Augmenté de 1.5 à 10.0 pour plus de nervosité
+KP = 10              # Augmenté de 1.5 à 10.0 pour plus de nervosité
 KD = 0.05              # Amortissement (à ajuster si ça vibre trop)
 KI = 0.0               # Toujours à 0
 TARGET_ANGLE = -90.0   # Point d'équilibre
@@ -47,7 +47,7 @@ DEADBAND = 0.0
 MAX_INTEGRAL = 100.0   
 ALPHA = 0.98           
 LOOP_DELAY = 0.01      
-MAX_SPEED = 1000      # Augmenté de 60 à 300 RPM pour plus de puissance
+MAX_SPEED = 1500     # Augmenté de 60 à 300 RPM pour plus de puissance
 
 
 def main() -> None:
