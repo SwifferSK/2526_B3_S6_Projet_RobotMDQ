@@ -150,9 +150,8 @@ def main() -> None:
                 correction_speed = -MAX_SPEED
                 
             # Les moteurs pas-à-pas sont souvent montés en miroir sur un robot 2 roues.
-            # Étant donné que le robot réagissait à l'envers (il reculait quand il tombait en avant),
-            # nous inversons les signes de la correction pour le forcer à "rattraper" sa chute !
-            motors.set_speeds(-correction_speed, correction_speed)
+            # Inversion des signes pour que le robot compense dans le bon sens et "rattrape" sa chute.
+            motors.set_speeds(correction_speed, -correction_speed)
             
             # Affichage ralenti pour ne pas inonder la console (1 fois toutes les 10 boucles -> ~10 fois par seconde)
             print_counter += 1
