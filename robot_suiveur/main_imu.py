@@ -47,7 +47,7 @@ DEADBAND = 0.0
 MAX_INTEGRAL = 100.0   
 ALPHA = 0.98           
 LOOP_DELAY = 0.01      
-MAX_SPEED = 500      # Augmenté de 60 à 300 RPM pour plus de puissance
+MAX_SPEED = 1000      # Augmenté de 60 à 300 RPM pour plus de puissance
 
 
 def main() -> None:
