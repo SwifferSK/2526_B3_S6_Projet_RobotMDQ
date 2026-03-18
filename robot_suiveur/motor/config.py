@@ -49,8 +49,8 @@ DEADBAND_DEG: float = 0.5
 
 # ── Compensation de Gravité (Feed-Forward) ────────────────────────────────────
 # Force de compensation proportionnelle à sin(angle).
-# Aide le moteur à contrer le poids du robot. Commencer à 0, monter doucement.
-BALANCE_KG: float = 0.0
+# Pour un robot d'environ 1kg, 15.0 est une bonne valeur de départ.
+BALANCE_KG: float = 15.0
 
 # Décalage mécanique en degrés (mesurer avec --calibrate sur sol plat)
 # Note: si vertical = -90, mettre -90 ici.

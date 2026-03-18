@@ -10,6 +10,7 @@ Usage:
 """
 from __future__ import annotations
 
+import math
 from imu.imu_fusion import IMUFusion
 from control.pid import PID
 
