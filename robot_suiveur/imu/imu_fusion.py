@@ -56,21 +56,22 @@ class IMUFusion:
         alpha: float = 0.98,
         output_beta: float = 0.5,
         angle_offset: float = 0.0,
+        axis: str = 'Y',
         i2c_bus: int = _I2C_BUS,
         address: int = _LSM6DSOW_ADDR,
     ) -> None:
         self.alpha = float(alpha)
-        self.output_beta = float(output_beta)   # EMA de sortie (bruit HF steppers)
+        self.output_beta = float(output_beta)
         self.angle_offset = float(angle_offset)
+        self.axis = str(axis).upper()
         self._bus = smbus2.SMBus(i2c_bus)
         self._addr = address
-        self._angle: float = 0.0           # angle brut du filtre complémentaire
-        self._filtered_angle: float = 0.0  # angle lissé par EMA de sortie
+        self._angle: float = 0.0
+        self._filtered_angle: float = 0.0
         self._last_time: float = time.monotonic()
 
         self._init_sensor()
 
-        # Chauffe le filtre (quelques lectures pour converger)
         for _ in range(20):
             self.get_tilt_angle()
 
@@ -102,26 +103,29 @@ class IMUFusion:
 
     # ── Filtre complémentaire ─────────────────────────────────────────────────
     def get_tilt_angle(self) -> float:
-        """Retourne l'angle de tangage (pitch) estimé en degrés.
-
-        Positif = robot penché vers l'avant, négatif = vers l'arrière.
-        """
+        """Retourne l'angle de tangage (pitch) estimé en degrés."""
         now = time.monotonic()
         dt = now - self._last_time
-        # Clamp dt pour éviter les gros sauts au démarrage
         dt = min(dt, 0.05)
         self._last_time = now
 
         ax, ay, az = self.read_accel_g()
         gx, gy, gz = self.read_gyro_dps()
 
-        # Angle d'inclinaison depuis l'accéléromètre (degrés)
-        # atan2(-ax, az) suppose que az=1 g quand le robot est vertical
-        accel_angle = math.degrees(math.atan2(-ax, az))
+        if self.axis == 'X':
+            # Rotation autour de X (Pitch)
+            # Standup vertical : az=1, ay=0 -> atan2(0, 1) = 0
+            accel_angle = math.degrees(math.atan2(ay, az))
+            gyro_rate = gx
+        else:
+            # Rotation autour de Y (Pitch)
+            # Default historique
+            accel_angle = math.degrees(math.atan2(-ax, az))
+            gyro_rate = gy
 
-        # Filtre complémentaire gyro + accél
+        # Filtre complémentaire
         self._angle = (
-            self.alpha * (self._angle + gy * dt)
+            self.alpha * (self._angle + gyro_rate * dt)
             + (1.0 - self.alpha) * accel_angle
         )
 

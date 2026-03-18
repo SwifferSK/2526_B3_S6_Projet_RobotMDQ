@@ -26,14 +26,23 @@ class BalanceController:
 
     def __init__(
         self,
-        kp: float = 30.0,
-        ki: float = 0.5,
-        kd: float = 1.5,
-        max_speed: float = 60.0,
+        kp: float = 5.0,
+        ki: float = 0.0,
+        kd: float = 0.8,
+        kg: float = 0.0,
+        max_speed: float = 40.0,
         angle_offset: float = 0.0,
         alpha: float = 0.98,
+        output_beta: float = 0.5,
+        axis: str = 'X',
+        deadband: float = 0.5,
     ) -> None:
-        self._imu = IMUFusion(alpha=alpha, angle_offset=angle_offset)
+        self._imu = IMUFusion(
+            alpha=alpha,
+            output_beta=output_beta,
+            angle_offset=angle_offset,
+            axis=axis
+        )
         self._pid = PID(
             kp=kp,
             ki=ki,
@@ -41,24 +50,40 @@ class BalanceController:
             out_min=-max_speed,
             out_max=max_speed,
         )
+        self.kg = kg
         self.max_speed = max_speed
+        self.deadband = deadband
         self._last_angle: float = 0.0
 
     # ── Interface publique ────────────────────────────────────────────────────
     def update(self, dt: float) -> float:
         """Met à jour la boucle de balance.
 
-        Args:
-            dt: Temps écoulé depuis le dernier appel (secondes).
-
         Returns:
             Commande de vitesse de base en RPM.
-            Positif = avancer, négatif = reculer.
         """
         angle = self._imu.get_tilt_angle()
         self._last_angle = angle
-        # setpoint = 0 ° (robot vertical)
-        speed_cmd = self._pid.compute(error=angle, dt=dt)
+
+        # 1. Zone morte (Deadband)
+        # Si l'angle est très proche de la verticale, on ignore pour éviter les bruits de stepper
+        angle_for_pid = 0.0 if abs(angle) < self.deadband else angle
+
+        # 2. Terme PID
+        pid_output = self._pid.compute(error=angle_for_pid, dt=dt)
+
+        # 3. Terme Gravité (Feed-Forward)
+        # Torque généré par le poids = m * g * L * sin(angle)
+        # On compense par un RPM proportionnel : KG * sin(angle)
+        gravity_comp = self.kg * math.sin(math.radians(angle))
+
+        # Sortie totale = régulateur + compensation physique
+        speed_cmd = pid_output + gravity_comp
+
+        # Bridage final
+        if speed_cmd > self.max_speed: speed_cmd = self.max_speed
+        elif speed_cmd < -self.max_speed: speed_cmd = -self.max_speed
+
         return speed_cmd
 
     @property

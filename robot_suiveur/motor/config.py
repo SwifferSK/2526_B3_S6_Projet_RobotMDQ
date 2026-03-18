@@ -37,15 +37,23 @@ LINE_KD: float = 0.5
 # ── Filtre complémentaire IMU ──────────────────────────────────────────────────
 ALPHA: float = 0.98
 
+# Axe utilisé pour le tangage (pitch) : 'X' ou 'Y'
+# Si le robot oscille sur l'axe X de l'IMU, mettre 'X'.
+IMU_AXIS: str = 'X'
+
 # Filtre EMA de sortie sur l'angle IMU (attenuation vibrations steppers)
-# 0.0 = pas de filtre, 0.5 = moyen, 0.7 = fort (ajoute un peu de lag)
 OUTPUT_BETA: float = 0.5
 
 # Zone morte (deadband) — ignore les erreurs d'angle inférieures à cette valeur
-# Evite les micro-corrections qui amplifient les vibrations
 DEADBAND_DEG: float = 0.5
 
+# ── Compensation de Gravité (Feed-Forward) ────────────────────────────────────
+# Force de compensation proportionnelle à sin(angle).
+# Aide le moteur à contrer le poids du robot. Commencer à 0, monter doucement.
+BALANCE_KG: float = 0.0
+
 # Décalage mécanique en degrés (mesurer avec --calibrate sur sol plat)
+# Note: si vertical = -90, mettre -90 ici.
 ANGLE_OFFSET: float = 0.0
 
 # Seuil IR pour la détection de la ligne noire (Volts)

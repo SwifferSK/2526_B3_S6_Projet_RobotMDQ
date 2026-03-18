@@ -135,23 +135,19 @@ robot_suiveur/
 ## Paramètres réglables — `motor/config.py`
 
 ```python
-MAX_SPEED_RPM  = 40.0    # vitesse max moteurs (RPM) — à augmenter progressivement
+MAX_SPEED_RPM  = 40.0    # vitesse max moteurs (RPM)
 
 # PID Balance (boucle interne — AJUSTER EN PREMIER)
-# ⚠️ Commencer PETIT — KP=30 sur des steppers Python → vibrations !
-BALANCE_KP     = 5.0     # point de départ sûr, monter par pas de 1-2
-BALANCE_KI     = 0.0     # garder à 0 pendant le réglage KP/KD
+BALANCE_KP     = 5.0     # point de départ sûr
+BALANCE_KI     = 0.0     
 BALANCE_KD     = 0.8
-
-# PID Ligne (boucle externe)
-LINE_KP        = 8.0
-LINE_KI        = 0.0
-LINE_KD        = 0.5
+BALANCE_KG     = 0.0     # Compensation gravité (Kg * sin(theta))
 
 ALPHA          = 0.98    # filtre complémentaire IMU
-ANGLE_OFFSET   = 0.0     # offset mécanique (°) — mesurer avec --calibrate
-LINE_THRESHOLD = 1.5     # seuil détection ligne (V)
-SEARCH_SPEED_RPM = 8.0  # vitesse rotation quand ligne perdue
+OUTPUT_BETA    = 0.5     # filtre EMA de sortie (anti-vibrations)
+IMU_AXIS       = 'X'     # 'X' ou 'Y' selon montage
+ANGLE_OFFSET   = 0.0     # offset mécanique (ex: -90.0)
+DEADBAND_DEG   = 0.5     # zone morte angle
 ```
 
 ---
@@ -259,4 +255,5 @@ pip3 install smbus2 spidev RPi.GPIO
 | 2026-03-17–18 | Réécriture du système de balance (PID + IMU) |
 | 2026-03-18 | ✅ Intégration balance + suivi de ligne (PID cascadé, `main_balance_line.py`) |
 | 2026-03-18 | 🔧 Fix direction moteur 2, réduction KP, ajout télémétrie temps réel |
+| 2026-03-18 | 🚀 Support Axe X/Y, Compensation de Gravité (KG) et filtre EMA anti-vibrations |
 
