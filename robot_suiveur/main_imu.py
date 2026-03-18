@@ -43,8 +43,8 @@ KP = 1.5               # Positif ! Car l'erreur est désormais (Target - Current
 KD = 0.05              # Positif pour que le gyroscope s'oppose aux variations
 TARGET_ANGLE = -90.0   # L'angle où le robot est parfaitement droit au repos
 DEADBAND = 2.0         # Zone morte (en degrés) autour de -90 où le robot ne fait rien (évite les tremblements)
-FC = 50.0              # Fréquence de coupure du filtre passe-bas (Hz)
-LOOP_DELAY = 0.01      # Boucle plus rapide (100Hz) pour un bon échantillonnage avec un filtre à 50Hz
+ALPHA = 0.98           # Coefficient du filtre complémentaire (0.98 = 98% gyro, 2% inclinaison accélérateur)
+LOOP_DELAY = 0.01      # Boucle plus rapide (100Hz) pour un bon échantillonnage
 MAX_SPEED = 60.0       # Vitesse max des moteurs en RPM pour éviter des commandes extrêmes
 
 
@@ -103,18 +103,17 @@ def main() -> None:
             angle_x = math.degrees(math.atan2(y_a * SF_2G, z_a * SF_2G))
             angle_y = math.degrees(math.atan2(x_a * SF_2G, z_a * SF_2G))
             
-            # --- Filtre Passe-Bas (Low-Pass Filter) ---
-            # Constante de temps RC = 1 / (2*pi*fc)
-            rc = 1.0 / (2.0 * math.pi * FC)
-            alpha = dt / (rc + dt)
-            filtered_angle_x = (alpha * angle_x) + ((1.0 - alpha) * filtered_angle_x)
+            # Le gyroscope donne la vitesse de rotation (dérivée). Sur l'axe X:
+            gyro_x_dps = x_g * SF_200DPS
+
+            # --- Filtre Complémentaire (Complementary Filter) ---
+            # Combine le gyroscope (rapide, sans beaucoup de bruit de vibration) 
+            # et l'accéléromètre (pas de dérive lente mais très bruité par les moteurs).
+            filtered_angle_x = ALPHA * (filtered_angle_x + gyro_x_dps * dt) + (1.0 - ALPHA) * angle_x
 
             # --- Logique d'équilibrage ---
             # On utilise l'angle filtré pour la stabilité
             current_angle = filtered_angle_x
-            
-            # Le gyroscope donne la vitesse de rotation (dérivée). Sur l'axe X:
-            gyro_x_dps = x_g * SF_200DPS
             
             # Formule d'erreur Inverse : Target - Current
             error = TARGET_ANGLE - current_angle
