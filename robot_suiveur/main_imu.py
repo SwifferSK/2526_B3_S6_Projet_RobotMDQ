@@ -116,11 +116,8 @@ def main() -> None:
             # --- Logique d'équilibrage ---
             current_angle = filtered_angle_x
             
-            # --- INVERSION ICI ---
-            # Au lieu de toucher aux moteurs, inversons la formule d'erreur globale.
-            # Si Target = -90 et Current = -100 (tombe vers -x), l'erreur devient NÉGATIVE (-10).
-            # Cela va physiquement inverser TOUT le PID de façon cohérente, sans causer d'emballement asymétrique.
-            error = current_angle - TARGET_ANGLE
+            # Formule d'erreur classique : Target - Current
+            error = TARGET_ANGLE - current_angle
             
             # --- Zone morte (Deadband) ---
             if abs(error) < DEADBAND:
@@ -137,9 +134,6 @@ def main() -> None:
                 # Calcul de la vitesse à envoyer aux roues
                 correction_speed = (error * KP) - (gyro_x_dps * KD) + (integral_error * KI)
             
-            # Inversion globale demandée (+RPM devient -RPM)
-            correction_speed = -correction_speed
-
             # Bridage de la vitesse max
             if correction_speed > MAX_SPEED:
                 correction_speed = MAX_SPEED
