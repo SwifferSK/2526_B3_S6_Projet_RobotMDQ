@@ -107,34 +107,40 @@ def main() -> None:
             angle_y = math.degrees(math.atan2(x_a * SF_2G, z_a * SF_2G))
             
             # Le gyroscope donne la vitesse de rotation (dérivée). Sur l'axe X:
+            # IMPORTANT: Si le gyroscope ne va pas dans le même sens que l'accéléromètre,
+            # le filtre complémentaire "détruit" l'angle et le PID compense à l'envers.
+            # Mettre INVERT_GYRO = -1.0 si le robot devient fou en tombant d'un côté !
             INVERT_GYRO = 1.0
             gyro_x_dps = x_g * SF_200DPS * INVERT_GYRO
 
             # --- Filtre Complémentaire (Complementary Filter) ---
+            # Combine le gyroscope (rapide, sans beaucoup de bruit de vibration) 
+            # et l'accéléromètre (pas de dérive lente mais très bruité par les moteurs).
             filtered_angle_x = ALPHA * (filtered_angle_x + gyro_x_dps * dt) + (1.0 - ALPHA) * angle_x
 
             # --- Logique d'équilibrage ---
+            # On utilise l'angle filtré pour la stabilité
             current_angle = filtered_angle_x
             
-            # --- INVERSION ICI ---
-            # Au lieu de toucher aux moteurs, inversons la formule d'erreur globale.
-            # Si Target = -90 et Current = -100 (tombe vers -x), l'erreur devient NÉGATIVE (-10).
-            # Cela va physiquement inverser TOUT le PID de façon cohérente, sans causer d'emballement asymétrique.
-            error = current_angle - TARGET_ANGLE
+            # Formule d'erreur Inverse : Target - Current
+            error = TARGET_ANGLE - current_angle
             
             # --- Zone morte (Deadband) ---
+            # Si l'erreur est toute petite, on ignore pour éviter qu'il tremble
             if abs(error) < DEADBAND:
                 correction_speed = 0.0
-                integral_error = 0.0
+                integral_error = 0.0 # On vide l'intégrale quand on est dans la zone morte
             else:
+                # Accumulation de l'erreur pour la constante Intégrale (I)
                 integral_error += error * dt
                 
+                # Anti-windup pour éviter que le terme intégral grimpe à l'infini
                 if integral_error > MAX_INTEGRAL:
                     integral_error = MAX_INTEGRAL
                 elif integral_error < -MAX_INTEGRAL:
                     integral_error = -MAX_INTEGRAL
 
-                # Calcul de la vitesse à envoyer aux roues
+                # Calcul de la vitesse à envoyer aux roues (Correction PID Complète)
                 correction_speed = (error * KP) - (gyro_x_dps * KD) + (integral_error * KI)
             
             # Bridage de la vitesse max
