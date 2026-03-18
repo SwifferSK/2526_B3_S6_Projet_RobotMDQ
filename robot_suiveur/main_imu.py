@@ -39,7 +39,7 @@ from motor.config import (
 
 # --- Réglages Ultra Simples d'Équilibre ---
 # Si le robot penche, les moteurs vont tourner pour le rattraper.
-KP = 10              # Augmenté de 1.5 à 10.0 pour plus de nervosité
+KP = 6              # Augmenté de 1.5 à 10.0 pour plus de nervosité
 KD = 0.05              # Amortissement (à ajuster si ça vibre trop)
 KI = 0.0               # Toujours à 0
 TARGET_ANGLE = -90.0   # Point d'équilibre
