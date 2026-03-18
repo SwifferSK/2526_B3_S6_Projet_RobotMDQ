@@ -59,8 +59,10 @@ IMU (LSM6DSOW I2C) ────────►  PID Balance ──►  speed_cmd
 | Vitesse defaut | 9.375 RPM |
 | Vitesse max | 60 RPM (réglable dans `config.py`) |
 
-> **Convention de direction** : les deux moteurs ont `DIRECTION_FORWARD = 1`.  
-> Vitesse négative ⇒ le driver inverse automatiquement la direction.
+> **Convention de direction** :
+> - Moteur 1 (gauche) = `DIRECTION_FORWARD`
+> - Moteur 2 (droite) = `DIRECTION_BACKWARD` ⚠️ — monté en miroir, doit être inversé
+> - Vitesse négative ⇒ le driver inverse automatiquement la direction.
 
 ### Capteurs IR — MCP3208 (ADC 12 bits, SPI)
 
@@ -133,12 +135,13 @@ robot_suiveur/
 ## Paramètres réglables — `motor/config.py`
 
 ```python
-MAX_SPEED_RPM  = 60.0    # vitesse max moteurs (RPM)
+MAX_SPEED_RPM  = 40.0    # vitesse max moteurs (RPM) — à augmenter progressivement
 
 # PID Balance (boucle interne — AJUSTER EN PREMIER)
-BALANCE_KP     = 30.0
-BALANCE_KI     = 0.5
-BALANCE_KD     = 1.5
+# ⚠️ Commencer PETIT — KP=30 sur des steppers Python → vibrations !
+BALANCE_KP     = 5.0     # point de départ sûr, monter par pas de 1-2
+BALANCE_KI     = 0.0     # garder à 0 pendant le réglage KP/KD
+BALANCE_KD     = 0.8
 
 # PID Ligne (boucle externe)
 LINE_KP        = 8.0
@@ -148,7 +151,7 @@ LINE_KD        = 0.5
 ALPHA          = 0.98    # filtre complémentaire IMU
 ANGLE_OFFSET   = 0.0     # offset mécanique (°) — mesurer avec --calibrate
 LINE_THRESHOLD = 1.5     # seuil détection ligne (V)
-SEARCH_SPEED_RPM = 10.0  # vitesse rotation quand ligne perdue
+SEARCH_SPEED_RPM = 8.0  # vitesse rotation quand ligne perdue
 ```
 
 ---
@@ -191,13 +194,52 @@ python3 main_balance_line.py
 
 ---
 
+## Affichage télémétrie en temps réel
+
+`main_balance_line.py` affiche une ligne qui se rafraîchit à ~10 Hz :
+
+```
+[BAL] Angle= +2.34°  PID_out= +11.7RPM  Steer= +0.0  L= +11.7RPM  R= +11.7RPM  LINE_ERR=None  dt=10.1ms  Hz=99
+```
+
+| Colonne | Signification |
+|---------|---------------|
+| `Angle` | Angle de tangage IMU (° — 0 = vertical) |
+| `PID_out` | Sortie du PID balance (RPM de base) |
+| `Steer` | Correction de cap (ligne) en RPM |
+| `L` / `R` | Vitesse réelle envoyée à chaque moteur |
+| `LINE_ERR` | Erreur de position ligne [-3.5, +3.5] ou None |
+| `dt` | Durée du dernier cycle de boucle (ms) |
+| `Hz` | Fréquence réelle de la boucle de contrôle |
+
+---
+
+## Dépannage fréquent
+
+| Symptôme | Cause probable | Solution |
+|----------|---------------|----------|
+| Les roues tournent en sens opposés | `MOTOR2_DIRECTION` mal configuré | Mettre `MOTOR2_DIRECTION = DIRECTION_BACKWARD` |
+| Vibrations / oscillations rapides | `BALANCE_KP` trop élevé | Réduire KP — commencer à 3–5 pour des steppers Python |
+| Robot tombe toujours vers l'avant/arrière | `ANGLE_OFFSET` non calibré | Lancer `--calibrate`, mettre la valeur dans `config.py` |
+| Robot part toujours dans le même sens | Mauvais axe de tangage IMU | Vérifier orientation physique du LSM6DSOW, ajuster l'axe dans `imu_fusion.py` (`gy` → peut être `gx` ou `-gy`) |
+| Fréquence boucle < 50 Hz (Hz affiché) | I2C/SPI trop lents ou sleep() trop long | Réduire `ALPHA` (0.95), désactiver verbose dans les capteurs |
+
+---
+
 ## Bugs connus (déjà corrigés)
 
 | Bug | Fichier | Correction |
 |-----|---------|------------|
 | `time_delay = 1` → boucle à 1 Hz | `imu/setting.py` | Non utilisé dans `imu_fusion.py` |
-| `read_i2c_block_data(addr, reg, bytes)` — shadowing du builtin `bytes` | `imu/drv_lsm6dsow.py` | Renommé `_NUM_BYTES = 6` dans `imu_fusion.py` |
-| Détection IR binaire (gauche/centre/droite) → PID inefficace | `sensors/line_detector.py` | Remplacé par barycentre pondéré continu |
+| `read_i2c_block_data(addr, reg, bytes)` — shadowing builtin `bytes` | `imu/drv_lsm6dsow.py` | Renommé `_NUM_BYTES = 6` |
+| Détection IR binaire → PID peu efficace | `sensors/line_detector.py` | Barycentre pondéré continu |
+| Double lecture ADC dans `detect_line` verbose | `sensors/line_detector.py` | Réutilisation des readings déjà lus |
+| `f"{error:.2f}"` crash si error=None | `sensors/line_detector.py` | `err_str` géré séparément |
+| `import sys` inutilisé | `main_balance_line.py` | Supprimé |
+| `last_time` non reset après chute → dt énorme | `main_balance_line.py` | Reset explicite après `time.sleep()` |
+| `MOTOR2_DIRECTION = DIRECTION_FORWARD` → roues opposées | `motor/config.py` | Changé en `DIRECTION_BACKWARD` |
+| `BALANCE_KP=30` → vibrations sur steppers Python | `motor/config.py` | Réduit à 5.0 (point de départ sûr) |
+
 
 ---
 
@@ -216,3 +258,5 @@ pip3 install smbus2 spidev RPi.GPIO
 | 2026-03-17 | Implémentation du suiveur de ligne de base (`main.py`) |
 | 2026-03-17–18 | Réécriture du système de balance (PID + IMU) |
 | 2026-03-18 | ✅ Intégration balance + suivi de ligne (PID cascadé, `main_balance_line.py`) |
+| 2026-03-18 | 🔧 Fix direction moteur 2, réduction KP, ajout télémétrie temps réel |
+
