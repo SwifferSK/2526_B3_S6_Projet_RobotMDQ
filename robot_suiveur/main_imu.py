@@ -107,11 +107,7 @@ def main() -> None:
             angle_y = math.degrees(math.atan2(x_a * SF_2G, z_a * SF_2G))
             
             # Le gyroscope donne la vitesse de rotation (dérivée). Sur l'axe X:
-            # IMPORTANT: Si le gyroscope ne va pas dans le même sens que l'accéléromètre,
-            # le filtre complémentaire "détruit" l'angle et le PID compense à l'envers.
-            # Mettre INVERT_GYRO = -1.0 si le robot devient fou en tombant d'un côté !
-            INVERT_GYRO = 1.0
-            gyro_x_dps = x_g * SF_200DPS * INVERT_GYRO
+            gyro_x_dps = x_g * SF_200DPS
 
             # --- Filtre Complémentaire (Complementary Filter) ---
             filtered_angle_x = ALPHA * (filtered_angle_x + gyro_x_dps * dt) + (1.0 - ALPHA) * angle_x
