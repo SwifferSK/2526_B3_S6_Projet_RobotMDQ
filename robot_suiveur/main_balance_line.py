@@ -32,11 +32,9 @@ from imu.imu_fusion import IMUFusion
 
 
 # ── Configuration ──────────────────────────────────────────────────────────────
-# Fréquence cible de la boucle principale (Hz)
-LOOP_HZ = 100
-
-# Si l'angle dépasse cette limite, le robot a chuté → on arrête les moteurs
-FALL_ANGLE = 45.0
+LOOP_HZ = 100          # fréquence cible de la boucle principale
+FALL_ANGLE = 45.0      # angle (°) au-delà duquel on considère que le robot a chuté
+DISPLAY_HZ = 10        # fréquence de rafraîchissement de l'affichage télémétrie
 
 
 # ── Initialisation ─────────────────────────────────────────────────────────────
@@ -83,8 +81,13 @@ def run(balance_only: bool = False) -> None:
         print("Mode : BALANCE SEULE (pas de suivi de ligne)")
 
     dt_target = 1.0 / LOOP_HZ
+    display_interval = 1.0 / DISPLAY_HZ
     last_time = time.monotonic()
+    last_display = time.monotonic()
     steer_cmd = 0.0
+    line_err: float | None = None
+    loop_count = 0
+    actual_hz = 0.0
 
     try:
         while running:
@@ -118,7 +121,6 @@ def run(balance_only: bool = False) -> None:
                 if line_err is not None:
                     steer_cmd = line_pid.compute(error=line_err, dt=dt)
                 else:
-                    # Ligne perdue : rotation lente pour chercher
                     steer_cmd = SEARCH_SPEED_RPM
                     line_pid.reset()
 
@@ -128,12 +130,62 @@ def run(balance_only: bool = False) -> None:
 
             motors.set_speeds(speed_left, speed_right)
 
+            # ── Télémétrie ───────────────────────────────────────────────────
+            loop_count += 1
+            now2 = time.monotonic()
+            if now2 - last_display >= display_interval:
+                elapsed = now2 - last_display
+                actual_hz = loop_count / elapsed if elapsed > 0 else 0.0
+                loop_count = 0
+                last_display = now2
+                _print_telemetry(
+                    angle=angle,
+                    speed_cmd=speed_cmd,
+                    steer_cmd=steer_cmd,
+                    speed_left=speed_left,
+                    speed_right=speed_right,
+                    line_err=line_err,
+                    dt=dt,
+                    actual_hz=actual_hz,
+                    balance_only=balance_only,
+                )
+
     finally:
         motors.stop_all()
         imu.close()
         if adc is not None:
             adc.close()
-        print("Arrêté proprement.")
+        print("\nArrêté proprement.")
+
+
+# ── Télémétrie ─────────────────────────────────────────────────────────────────
+def _print_telemetry(
+    angle: float,
+    speed_cmd: float,
+    steer_cmd: float,
+    speed_left: float,
+    speed_right: float,
+    line_err: "float | None",
+    dt: float,
+    actual_hz: float,
+    balance_only: bool,
+) -> None:
+    """Affiche une ligne de télémétrie sur stdout (rafraîchissement en place)."""
+    line_str = f"LINE_ERR={line_err:+.2f}" if line_err is not None else "LINE_ERR=None "
+    mode_str = "BAL" if balance_only else "BAL+LINE"
+
+    msg = (
+        f"[{mode_str}] "
+        f"Angle={angle:+6.2f}°  "
+        f"PID_out={speed_cmd:+6.1f}RPM  "
+        f"Steer={steer_cmd:+5.1f}  "
+        f"L={speed_left:+6.1f}RPM  R={speed_right:+6.1f}RPM  "
+        f"{line_str}  "
+        f"dt={dt*1000:.1f}ms  Hz={actual_hz:.0f}"
+    )
+    # \r pour réécrire sur la même ligne (terminal compatible ANSI)
+    print(f"\r{msg}", end="", flush=True)
+
 
 
 # ── Calibration ────────────────────────────────────────────────────────────────
