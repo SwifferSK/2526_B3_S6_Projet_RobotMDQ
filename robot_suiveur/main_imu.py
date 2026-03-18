@@ -41,10 +41,8 @@ from motor.config import (
 # Si le robot penche, les moteurs vont tourner pour le rattraper.
 KP = 1.5               # Positif ! Car l'erreur est désormais (Target - Current)
 KD = 0.05              # Positif pour que le gyroscope s'oppose aux variations
-KI = 0.0               # Nouveau: Compense un centre de gravité imparfait (Laisse à 0.0 le temps de régler KP et KD)
 TARGET_ANGLE = -90.0   # L'angle où le robot est parfaitement droit au repos
-DEADBAND = 0.0         # 0 pour un équilibre parfait, on veut qu'il corrige immédiatement
-MAX_INTEGRAL = 100.0   # Limite pour empêcher l'intégrale d'exploser si on tient le robot à la main (Anti-windup)
+DEADBAND = 2.0         # Zone morte (en degrés) autour de -90 où le robot ne fait rien (évite les tremblements)
 ALPHA = 0.98           # Coefficient du filtre complémentaire (0.98 = 98% gyro, 2% inclinaison accélérateur)
 LOOP_DELAY = 0.01      # Boucle plus rapide (100Hz) pour un bon échantillonnage
 MAX_SPEED = 60.0       # Vitesse max des moteurs en RPM pour éviter des commandes extrêmes
@@ -84,9 +82,8 @@ def main() -> None:
         print("Début de l'équilibrage dans 1 seconde. Tenez le robot droit !")
         time.sleep(1)
 
-        # Variable pour le filtre passe-bas et régulateur PID
+        # Variable pour le filtre passe-bas
         filtered_angle_x = -90.0
-        integral_error = 0.0
         last_time = time.time()
         print_counter = 0
 
@@ -125,19 +122,12 @@ def main() -> None:
             # Si l'erreur est toute petite, on ignore pour éviter qu'il tremble
             if abs(error) < DEADBAND:
                 correction_speed = 0.0
-                integral_error = 0.0 # On vide l'intégrale quand on est dans la zone morte
             else:
-                # Accumulation de l'erreur pour la constante Intégrale (I)
-                integral_error += error * dt
-                
-                # Anti-windup pour éviter que le terme intégral grimpe à l'infini
-                if integral_error > MAX_INTEGRAL:
-                    integral_error = MAX_INTEGRAL
-                elif integral_error < -MAX_INTEGRAL:
-                    integral_error = -MAX_INTEGRAL
-
-                # Calcul de la vitesse à envoyer aux roues (Correction PID Complète)
-                correction_speed = (error * KP) - (gyro_x_dps * KD) + (integral_error * KI)
+                # Calcul de la vitesse à envoyer aux roues (Correction Proportionnelle + Dérivée)
+                # Remarque: gyro_x_dps n'a pas besoin d'être soustrait vu qu'il est la dérivée de current,
+                # mais si on utilise (Target - Current), pour s'opposer, la dérivée de l'erreur est : (0 - vitesse) = -vitesse.
+                # On utilise + ou - selon la définition du repère. A ajuster si le robot oscille trop.
+                correction_speed = (error * KP) - (gyro_x_dps * KD)
             
             # Bridage de la vitesse max
             if correction_speed > MAX_SPEED:
@@ -146,9 +136,9 @@ def main() -> None:
                 correction_speed = -MAX_SPEED
                 
             # Les moteurs pas-à-pas sont souvent montés en miroir sur un robot 2 roues.
-            # Étant donné que le robot réagissait à l'envers (il reculait quand il tombait en avant),
-            # nous inversons les signes de la correction pour le forcer à "rattraper" sa chute !
-            motors.set_speeds(-correction_speed, correction_speed)
+            # Pour avancer droit, un moteur doit tourner en sens horaire (positif) et l'autre en anti-horaire (négatif).
+            # Si le robot tourne sur lui-même au lieu d'avancer/reculer, on inverse le signe d'un des deux.
+            motors.set_speeds(correction_speed, -correction_speed)
             
             # Affichage ralenti pour ne pas inonder la console (1 fois toutes les 10 boucles -> ~10 fois par seconde)
             print_counter += 1
