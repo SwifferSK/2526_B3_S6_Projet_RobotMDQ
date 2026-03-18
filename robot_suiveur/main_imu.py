@@ -143,6 +143,9 @@ def main() -> None:
                 # Calcul de la vitesse à envoyer aux roues (Correction PID Complète)
                 correction_speed = (error * KP) - (gyro_x_dps * KD) + (integral_error * KI)
             
+            # Inversion globale demandée (+RPM devient -RPM)
+            correction_speed = -correction_speed
+
             # Bridage de la vitesse max
             if correction_speed > MAX_SPEED:
                 correction_speed = MAX_SPEED
