@@ -38,19 +38,40 @@ from motor.config import (
 )
 
 # --- Réglages Ultra Simples d'Équilibre ---
-# Si le robot penche, les moteurs vont tourner pour le rattraper.
-KP = 5              # Augmenté de 1.5 à 10.0 pour plus de nervosité
-KD = 0              # Amortissement (à ajuster si ça vibre trop)
-KI = 0.0               # Toujours à 0
+# Valeurs par défaut
+KP_DEFAULT = 5              
+KD_DEFAULT = 0              
+KI_DEFAULT = 0.0               
 TARGET_ANGLE = -90.0   # Point d'équilibre
-DEADBAND = 5        
+DEADBAND = 0        
 MAX_INTEGRAL = 100.0   
 ALPHA = 0.98           
 LOOP_DELAY = 0.01      
 MAX_SPEED = 1000    # Augmenté de 60 à 300 RPM pour plus de puissance
 
 
+def get_float_input(prompt: str, default: float) -> float:
+    """Demande une valeur à l'utilisateur via le terminal avec une valeur par défaut."""
+    try:
+        user_input = input(f"{prompt} [défaut={default}] : ").strip()
+        if not user_input:
+            return default
+        return float(user_input)
+    except (ValueError, EOFError, KeyboardInterrupt):
+        print(f" -> Utilisation de la valeur par défaut : {default}")
+        return default
+
+
 def main() -> None:
+    print("\n" + "="*40)
+    print("      RÉGLAGE DES PARAMÈTRES PID")
+    print("="*40)
+    kp = get_float_input("Entrez KP (Proportionnel)", KP_DEFAULT)
+    kd = get_float_input("Entrez KD (Dérivé)", KD_DEFAULT)
+    ki = get_float_input("Entrez KI (Intégral)", KI_DEFAULT)
+    print("="*40)
+    print(f"Paramètres validés : KP={kp}, KD={kd}, KI={ki}\n")
+
     print("Initialisation de l'IMU...")
     try:
         driver = drv_lsm6dsow(bus=1)
@@ -137,7 +158,7 @@ def main() -> None:
                     integral_error = -MAX_INTEGRAL
 
                 # Calcul de la vitesse à envoyer aux roues (Correction PID Complète)
-                correction_speed = (error * KP) - (gyro_x_dps * KD) + (integral_error * KI)
+                correction_speed = (error * kp) - (gyro_x_dps * kd) + (integral_error * ki)
             
             # Bridage de la vitesse max
             if correction_speed > MAX_SPEED:
