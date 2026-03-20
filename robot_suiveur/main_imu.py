@@ -43,7 +43,7 @@ KP_DEFAULT = 25
 KD_DEFAULT = 0              
 KI_DEFAULT = 0.0               
 ALPHA_DEFAULT = 0.90   # Réduit de 0.98 à 0.90 pour être plus réactif
-TARGET_ANGLE = -90.0   # Point d'équilibre
+TARGET_ANGLE_DEFAULT = -85   # Point d'équilibre par défaut
 DEADBAND = 0        
 MAX_INTEGRAL = 100.0   
 LOOP_DELAY = 0.01      
@@ -71,8 +71,9 @@ def main() -> None:
     kd = get_float_input("Entrez KD (Dérivé)", KD_DEFAULT)
     ki = get_float_input("Entrez KI (Intégral)", KI_DEFAULT)
     alpha = get_float_input("Entrez ALPHA (Filtre [0.5-0.99])", ALPHA_DEFAULT)
+    target_angle = get_float_input("Entrez TARGET_ANGLE (Angle d'équilibre)", TARGET_ANGLE_DEFAULT)
     print("="*40)
-    print(f"Paramètres validés : KP={kp}, KD={kd}, KI={ki}, ALPHA={alpha}\n")
+    print(f"Paramètres validés : KP={kp}, KD={kd}, KI={ki}, ALPHA={alpha}, TARGET={target_angle}\n")
 
     print("Initialisation de l'IMU...")
     try:
@@ -104,7 +105,10 @@ def main() -> None:
         motors.start_continuous()
         time.sleep(0.5)
 
-        print("Début de l'équilibrage dans 1 seconde. Tenez le robot droit !")
+        print("\n" + "!"*40)
+        print(" ! ATTENTION : Tenez le robot BIEN DROIT")
+        print(" ! Il va s'initialiser dans 1 seconde...")
+        print("!"*40 + "\n")
         time.sleep(1)
 
         # Variable pour le filtre passe-bas et régulateur PID
@@ -142,7 +146,7 @@ def main() -> None:
             current_angle = filtered_angle_x
             
             # Formule d'erreur Inverse : Target - Current
-            error = TARGET_ANGLE - current_angle
+            error = target_angle - current_angle
             
             # --- Zone morte (Deadband) ---
             # Si l'erreur est toute petite, on ignore pour éviter qu'il tremble
