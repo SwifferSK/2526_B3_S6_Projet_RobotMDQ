@@ -39,15 +39,16 @@ from motor.config import (
 
 # --- Réglages Ultra Simples d'Équilibre ---
 # Valeurs par défaut
-KP_DEFAULT = 5              
+KP_DEFAULT = 25           
 KD_DEFAULT = 0              
 KI_DEFAULT = 0.0               
+ALPHA_DEFAULT = 0.90   # Réduit de 0.98 à 0.90 pour être plus réactif
 TARGET_ANGLE = -90.0   # Point d'équilibre
 DEADBAND = 0        
 MAX_INTEGRAL = 100.0   
-ALPHA = 0.98           
 LOOP_DELAY = 0.01      
 MAX_SPEED = 1000    # Augmenté de 60 à 300 RPM pour plus de puissance
+PRINT_EVERY = 100   # Une fois par seconde (100Hz / 100)
 
 
 def get_float_input(prompt: str, default: float) -> float:
@@ -69,8 +70,9 @@ def main() -> None:
     kp = get_float_input("Entrez KP (Proportionnel)", KP_DEFAULT)
     kd = get_float_input("Entrez KD (Dérivé)", KD_DEFAULT)
     ki = get_float_input("Entrez KI (Intégral)", KI_DEFAULT)
+    alpha = get_float_input("Entrez ALPHA (Filtre [0.5-0.99])", ALPHA_DEFAULT)
     print("="*40)
-    print(f"Paramètres validés : KP={kp}, KD={kd}, KI={ki}\n")
+    print(f"Paramètres validés : KP={kp}, KD={kd}, KI={ki}, ALPHA={alpha}\n")
 
     print("Initialisation de l'IMU...")
     try:
@@ -133,7 +135,7 @@ def main() -> None:
             # --- Filtre Complémentaire (Complementary Filter) ---
             # Combine le gyroscope (rapide, sans beaucoup de bruit de vibration) 
             # et l'accéléromètre (pas de dérive lente mais très bruité par les moteurs).
-            filtered_angle_x = ALPHA * (filtered_angle_x + gyro_x_dps * dt) + (1.0 - ALPHA) * angle_x
+            filtered_angle_x = alpha * (filtered_angle_x + gyro_x_dps * dt) + (1.0 - alpha) * angle_x
 
             # --- Logique d'équilibrage ---
             # On utilise l'angle filtré pour la stabilité
@@ -171,9 +173,9 @@ def main() -> None:
             # nous inversons les signes de la correction pour le forcer à "rattraper" sa chute !
             motors.set_speeds(-correction_speed, correction_speed)
             
-            # Affichage ralenti pour ne pas inonder la console (1 fois toutes les 10 boucles -> ~10 fois par seconde)
+            # Affichage ralenti pour ne pas inonder la console (1 fois toutes les 100 boucles -> ~1 fois par seconde)
             print_counter += 1
-            if print_counter >= 10:
+            if print_counter >= PRINT_EVERY:
                 print(f"Inclinaison X (Utilisé): {current_angle:.2f}° | Gyro X: {gyro_x_dps:.2f} dps")
                 print(f"-> Vitesse Moteurs: {correction_speed:.2f} RPM | Erreur: {error:.2f}°")
                 print("-" * 50)
