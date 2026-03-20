@@ -39,14 +39,15 @@ from motor.config import (
 
 # --- Réglages Ultra Simples d'Équilibre ---
 # Valeurs par défaut
-KP_DEFAULT = 30          
-ALPHA_DEFAULT = 0.98   # Réduit de 0.98 à 0.90 pour être plus réactif
+KP_DEFAULT = 50           
+KD_DEFAULT = 1.0       # Amortisseur (pour arrêter les vibrations)
+ALPHA_DEFAULT = 0.90   
 TARGET_ANGLE_DEFAULT = -86.5   # Point d'équilibre par défaut
 DEADBAND = 0        
 MAX_INTEGRAL = 100.0   
 LOOP_DELAY = 0.01      
-MAX_SPEED = 94.0    # Comme demandé
-MAX_ACCEL_RPM = 94 # On garde pour la stabilité
+MAX_SPEED = 600.0    # Augmenté pour la récupération
+MAX_ACCEL_RPM = 1000.0  # Augmenté pour la réactivité
 PRINT_EVERY = 100   # Une fois par seconde (100Hz / 100)
 
 
@@ -64,11 +65,12 @@ def get_float_input(prompt: str, default: float) -> float:
 
 def main() -> None:
     print("="*40)
-    kp = get_float_input("Entrez KP (Proportionnel)", KP_DEFAULT)
-    alpha = get_float_input("Entrez ALPHA (Filtre [0.5-0.99])", ALPHA_DEFAULT)
-    target_angle = get_float_input("Entrez TARGET_ANGLE (Angle d'équilibre)", TARGET_ANGLE_DEFAULT)
+    kp = get_float_input("Entrez KP (Force)", KP_DEFAULT)
+    kd = get_float_input("Entrez KD (Amortisseur/Vibrations)", KD_DEFAULT)
+    alpha = get_float_input("Entrez ALPHA (Filtre)", ALPHA_DEFAULT)
+    target_angle = get_float_input("Entrez TARGET_ANGLE (Angle)", TARGET_ANGLE_DEFAULT)
     print("="*40)
-    print(f"Paramètres validés : KP={kp}, ALPHA={alpha}, TARGET={target_angle}\n")
+    print(f"Paramètres validés : KP={kp}, KD={kd}, ALPHA={alpha}, TARGET={target_angle}\n")
 
     print("Initialisation de l'IMU...")
     try:
@@ -150,8 +152,9 @@ def main() -> None:
                 correction_speed = 0.0
                 integral_error = 0.0 # On vide l'intégrale quand on est dans la zone morte
             else:
-                # Calcul de la vitesse à envoyer aux roues (Correction Proportionnelle Ultra Simple)
-                correction_speed = (error * kp)
+                # Calcul de la vitesse à envoyer aux roues (Correction PD)
+                # On utilise gyro_x_dps (vitesse de chute) pour le terme Dérivé (D)
+                correction_speed = (error * kp) - (gyro_x_dps * kd)
             
             # --- Bridage de la vitesse max ---
             if correction_speed > MAX_SPEED:

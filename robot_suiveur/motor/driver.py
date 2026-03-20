@@ -122,23 +122,29 @@ class TMC2225:
             self._thread = None
 
     def _step_loop(self) -> None:
-        """Background loop generating step pulses continuously with high precision."""
+        """Background loop generating step pulses with high responsiveness."""
         while self._running:
             d = self.delay
-            if d > 0 and self.speed_rpm > 0:
+            s = self.speed_rpm
+            if d > 0 and s > 0:
                 # Étape HIGH
                 GPIO.output(self.step_pin, GPIO.HIGH)
-                t_target = time.perf_counter() + d
-                while time.perf_counter() < t_target:
-                    pass
+                self._responsive_wait(d)
                 
                 # Étape LOW
                 GPIO.output(self.step_pin, GPIO.LOW)
-                t_target = time.perf_counter() + d
-                while time.perf_counter() < t_target:
-                    pass
+                self._responsive_wait(d)
             else:
-                time.sleep(0.01)
+                time.sleep(0.001) # Petit dodo si à l'arrêt
+
+    def _responsive_wait(self, duration: float) -> None:
+        """Attente active qui s'arrête si la vitesse change ou si on stoppe."""
+        start_d = self.delay
+        t_target = time.perf_counter() + duration
+        while time.perf_counter() < t_target:
+            # Si le robot demande une nouvelle vitesse ou s'arrête, on sort du wait
+            if not self._running or self.delay != start_d:
+                break
 
     def info(self) -> None:
         print(
