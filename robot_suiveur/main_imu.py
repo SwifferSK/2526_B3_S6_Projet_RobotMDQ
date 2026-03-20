@@ -39,15 +39,16 @@ from motor.config import (
 
 # --- Réglages Ultra Simples d'Équilibre ---
 # Valeurs par défaut
-KP_DEFAULT = 25           
-KD_DEFAULT = 0              
+KP_DEFAULT = 30           
+KD_DEFAULT = 0.5              
 KI_DEFAULT = 0.0               
 ALPHA_DEFAULT = 0.90   # Réduit de 0.98 à 0.90 pour être plus réactif
-TARGET_ANGLE_DEFAULT = -85   # Point d'équilibre par défaut
+TARGET_ANGLE_DEFAULT = -86.5   # Point d'équilibre par défaut
 DEADBAND = 0        
 MAX_INTEGRAL = 100.0   
 LOOP_DELAY = 0.01      
-MAX_SPEED = 1000    # Augmenté de 60 à 300 RPM pour plus de puissance
+MAX_SPEED = 1000    
+MAX_ACCEL_RPM = 100.0  # Accélération max par itération (évite le décrochage)
 PRINT_EVERY = 100   # Une fois par seconde (100Hz / 100)
 
 
@@ -112,10 +113,11 @@ def main() -> None:
         time.sleep(1)
 
         # Variable pour le filtre passe-bas et régulateur PID
-        filtered_angle_x = -90.0
+        filtered_angle_x = -86.5
         integral_error = 0.0
         last_time = time.time()
         print_counter = 0
+        last_correction_speed = 0.0
 
         while True:
             current_time = time.time()
@@ -166,15 +168,23 @@ def main() -> None:
                 # Calcul de la vitesse à envoyer aux roues (Correction PID Complète)
                 correction_speed = (error * kp) - (gyro_x_dps * kd) + (integral_error * ki)
             
-            # Bridage de la vitesse max
+            # --- Bridage de la vitesse max ---
             if correction_speed > MAX_SPEED:
                 correction_speed = MAX_SPEED
             elif correction_speed < -MAX_SPEED:
                 correction_speed = -MAX_SPEED
                 
+            # --- Bridage de l'accélération (Slew Rate Limit) ---
+            # Pour éviter que le moteur "décroche" s'il change de vitesse trop brutalement.
+            diff = correction_speed - last_correction_speed
+            if diff > MAX_ACCEL_RPM:
+                correction_speed = last_correction_speed + MAX_ACCEL_RPM
+            elif diff < -MAX_ACCEL_RPM:
+                correction_speed = last_correction_speed - MAX_ACCEL_RPM
+            
+            last_correction_speed = correction_speed
+
             # Les moteurs pas-à-pas sont souvent montés en miroir sur un robot 2 roues.
-            # Étant donné que le robot réagissait à l'envers (il reculait quand il tombait en avant),
-            # nous inversons les signes de la correction pour le forcer à "rattraper" sa chute !
             motors.set_speeds(-correction_speed, correction_speed)
             
             # Affichage ralenti pour ne pas inonder la console (1 fois toutes les 100 boucles -> ~1 fois par seconde)
