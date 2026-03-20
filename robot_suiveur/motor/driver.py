@@ -122,14 +122,21 @@ class TMC2225:
             self._thread = None
 
     def _step_loop(self) -> None:
-        """Background loop generating step pulses continuously."""
+        """Background loop generating step pulses continuously with high precision."""
         while self._running:
-            delay = self.delay
-            if delay > 0 and self.speed_rpm > 0:
+            d = self.delay
+            if d > 0 and self.speed_rpm > 0:
+                # Étape HIGH
                 GPIO.output(self.step_pin, GPIO.HIGH)
-                time.sleep(delay)
+                t_target = time.perf_counter() + d
+                while time.perf_counter() < t_target:
+                    pass
+                
+                # Étape LOW
                 GPIO.output(self.step_pin, GPIO.LOW)
-                time.sleep(delay)
+                t_target = time.perf_counter() + d
+                while time.perf_counter() < t_target:
+                    pass
             else:
                 time.sleep(0.01)
 
