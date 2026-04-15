@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import time
-import threading
+import math
 
 try:
-    import RPi.GPIO as GPIO  # type: ignore
-except ImportError:  # pragma: no cover
-    GPIO = None
+    import pigpio
+except ImportError:
+    pigpio = None
 
 from .config import (
     DEFAULT_SPEED_RPM,
@@ -17,12 +17,10 @@ from .config import (
     DIRECTION_BACKWARD,
 )
 
-
 class TMC2225:
-    """Very simple STEP/DIR stepper driver helper.
-
-    This toggles STEP with a computed delay based on RPM + steps_per_rev + microstep.
-    """
+    """TMC2225 driver using hardware PWM with pigpio for perfect zero-jitter stepping."""
+    
+    pi = None # Class-level pigpio connection
 
     def __init__(
         self,
@@ -33,8 +31,13 @@ class TMC2225:
         steps_per_rev: int = DEFAULT_STEPS_PER_REV,
         microstep: int = DEFAULT_MICROSTEP,
     ):
-        if GPIO is None:  
-            raise ImportError("Pas de GPIO")
+        if pigpio is None:
+            raise ImportError("La librairie pigpio n'est pas installée. Installez-la avec 'pip install pigpio'.")
+            
+        if TMC2225.pi is None:
+            TMC2225.pi = pigpio.pi()
+            if not TMC2225.pi.connected:
+                raise RuntimeError("pigpiod n'est pas lancé! Lancez 'sudo pigpiod' dans le terminal.")
 
         self.step_pin = int(step_pin)
         self.dir_pin = int(dir_pin)
@@ -42,18 +45,17 @@ class TMC2225:
         self.microstep = int(microstep)
         self.default_direction = direction
         
-        self._thread = None
-        self._running = False
         self.speed_rpm = 0.0
-        self.delay = 0.0
+        self.direction = direction
+        self._continuous_running = False
 
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.step_pin, GPIO.OUT)
-        GPIO.setup(self.dir_pin, GPIO.OUT)
-
+        TMC2225.pi.set_mode(self.dir_pin, pigpio.OUTPUT)
+        TMC2225.pi.set_mode(self.step_pin, pigpio.OUTPUT)
+        
         self.set_speed(speed_rpm)
 
     def set_speed(self, speed_rpm: float) -> None:
+        """Modifie la vitesse en temps réel via PWM matériel (très fluide)."""
         if speed_rpm < 0:
             dir_val = DIRECTION_BACKWARD if self.default_direction == DIRECTION_FORWARD else DIRECTION_FORWARD
             self.set_direction(dir_val)
@@ -61,34 +63,43 @@ class TMC2225:
             self.set_direction(self.default_direction)
 
         self.speed_rpm = abs(speed_rpm)
-        if self.speed_rpm == 0:
-            self.freq = 0.0
-            self.delay = 0.0
-            return
-
         total_steps_per_rev = self.steps_per_rev * self.microstep
-        self.freq = (self.speed_rpm * total_steps_per_rev) / 60.0
-        self.delay = 1.0 / (2.0 * self.freq) if self.freq > 0 else 0.0
+        self.freq = int((self.speed_rpm * total_steps_per_rev) / 60.0)
+
+        if self._continuous_running:
+            if self.freq > 0:
+                try:
+                    # 500000/1M = 50% duty cycle, fréquence precise en Hz.
+                    TMC2225.pi.hardware_PWM(self.step_pin, self.freq, 500000)
+                except pigpio.error:
+                    # Fallback sur le DMA PWM classique si la pin ne supporte pas Hardware PWM
+                    TMC2225.pi.set_PWM_frequency(self.step_pin, self.freq)
+                    TMC2225.pi.set_PWM_dutycycle(self.step_pin, 128)
+            else:
+                try:
+                    TMC2225.pi.hardware_PWM(self.step_pin, 0, 0)
+                except pigpio.error:
+                    TMC2225.pi.set_PWM_dutycycle(self.step_pin, 0)
 
     def set_direction(self, direction: int) -> None:
         if direction not in (DIRECTION_FORWARD, DIRECTION_BACKWARD):
-            raise ValueError(f"La direction doit être {DIRECTION_FORWARD} ou {DIRECTION_BACKWARD}")
-        self.direction = direction
-        GPIO.output(self.dir_pin, self.direction)
+            raise ValueError(f"Direction {direction} invalide.")
+        if self.direction != direction:
+            self.direction = direction
+            TMC2225.pi.write(self.dir_pin, self.direction)
 
     def step(self, steps: int = 1) -> None:
-        """Fait un nombre précis de pas (bloquant)."""
+        """Fait des pas de manière bloquante (sans utiliser le PWM continu)."""
+        if self.freq == 0:
+            return
+        delay = 1.0 / self.freq
         for _ in range(int(steps)):
-            GPIO.output(self.step_pin, GPIO.HIGH)
-            time.sleep(self.delay)
-            GPIO.output(self.step_pin, GPIO.LOW)
-            time.sleep(self.delay)
+            TMC2225.pi.write(self.step_pin, 1)
+            time.sleep(delay / 2.0)
+            TMC2225.pi.write(self.step_pin, 0)
+            time.sleep(delay / 2.0)
 
     def rotate(self, angle_deg: float) -> None:
-        """Rotate by an angle in degrees.
-
-        If angle_deg is negative, direction is temporarily inverted.
-        """
         angle = float(angle_deg)
         if angle == 0:
             return
@@ -107,52 +118,23 @@ class TMC2225:
             self.set_direction(restore_direction)
 
     def start_continuous(self) -> None:
-        """Start the background thread for continuous stepping."""
-        if self._running:
-            return
-        self._running = True
-        self._thread = threading.Thread(target=self._step_loop, daemon=True)
-        self._thread.start()
+        """Démarre le PWM continu (0 lag CPU)."""
+        self._continuous_running = True
+        self.set_speed(self.speed_rpm) # applique le PWM
 
     def stop_continuous(self) -> None:
-        """Stop the background thread."""
-        self._running = False
-        if self._thread is not None:
-            self._thread.join()
-            self._thread = None
-
-    def _step_loop(self) -> None:
-        """Background loop generating step pulses with high responsiveness."""
-        while self._running:
-            d = self.delay
-            s = self.speed_rpm
-            if d > 0 and s > 0:
-                # Étape HIGH
-                GPIO.output(self.step_pin, GPIO.HIGH)
-                self._responsive_wait(d)
-                
-                # Étape LOW
-                GPIO.output(self.step_pin, GPIO.LOW)
-                self._responsive_wait(d)
-            else:
-                time.sleep(0.001) # Petit dodo si à l'arrêt
-
-    def _responsive_wait(self, duration: float) -> None:
-        """Attente active qui s'arrête si la vitesse change ou si on stoppe."""
-        start_d = self.delay
-        t_target = time.perf_counter() + duration
-        while time.perf_counter() < t_target:
-            # Si le robot demande une nouvelle vitesse ou s'arrête, on sort du wait
-            if not self._running or self.delay != start_d:
-                break
+        """Stoppe le PWM."""
+        self._continuous_running = False
+        self.set_speed(0.0)
 
     def info(self) -> None:
         print(
-            f"[TMC2225] Step pin: {self.step_pin} | Dir pin: {self.dir_pin} | "
-            f"Speed: {self.speed_rpm:.2f} RPM | Dir: {self.direction}"
+            f"[TMC2225 pigpio] Step: {self.step_pin} | Dir: {self.dir_pin} | "
+            f"Speed: {self.speed_rpm:.2f} RPM | Freq: {self.freq} Hz"
         )
 
     def cleanup(self) -> None:
         self.stop_continuous()
-        if GPIO is not None:
-            GPIO.cleanup((self.step_pin, self.dir_pin))
+        if TMC2225.pi is not None and TMC2225.pi.connected:
+            TMC2225.pi.write(self.dir_pin, 0)
+            TMC2225.pi.write(self.step_pin, 0)

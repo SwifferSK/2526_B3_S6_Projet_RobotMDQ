@@ -39,7 +39,7 @@ from motor.config import (
 
 # --- Réglages Ultra Simples d'Équilibre ---
 # Valeurs par défaut
-KP_DEFAULT = 50           
+KP_DEFAULT =  45          
 KD_DEFAULT = 1.0       # Amortisseur (pour arrêter les vibrations)
 ALPHA_DEFAULT = 0.90   
 TARGET_ANGLE_DEFAULT = -86.5   # Point d'équilibre par défaut
