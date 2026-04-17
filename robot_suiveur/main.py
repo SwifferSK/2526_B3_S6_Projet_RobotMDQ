@@ -1,13 +1,3 @@
-"""Robot suiveur de ligne - point d'entrée.
-
-Ce script :
-- lit les 8 capteurs IR via MCP3208
-- détecte la position de la ligne (left/center/right/none)
-- commande les 2 moteurs pas-à-pas (STEP/DIR) via le module motor/
-
-Lance :
-  python3 main.py
-"""
 
 from __future__ import annotations
 
@@ -25,11 +15,11 @@ from motor.config import (
     MOTOR2_DIRECTION,
 )
 
-# --- Réglages suiveur de ligne ---
-THRESHOLD = 1.5     # ajuste selon tes capteurs
-LOOP_DELAY = 0.0    # tu peux mettre 0.02 si tu veux ralentir la boucle
 
-# Angles de commande (plus petit = plus "doux")
+THRESHOLD = 1.5    
+LOOP_DELAY = 0.0    
+
+
 FORWARD_ANGLE = 5.0
 TURN_ANGLE = 3.0
 SEARCH_ANGLE = 2.0
@@ -58,31 +48,26 @@ def main() -> None:
         print("Starting line follower (Ctrl+C to stop)...")
         motors.info()
         
-        # Démarrer le mouvement continu en arrière-plan (moteurs initialement à 0)
+        
         motors.set_speeds(0, 0)
         motors.start_continuous()
 
         while True:
-            # detect_line s'occupe de lire les capteurs et introduit un mini délai de 0.05s
+            
             pos = detect_line(adc, threshold=THRESHOLD, verbose=True)
 
-            # Stratégie simple :
-            # - center : avance
-            # - left   : corrige à gauche (ralentit/recule un peu côté gauche ou avance côté droit)
-            # - right  : corrige à droite
-            # - none   : petite recherche
+          
             if pos == "center":
-                # Avance tout droit
+               
                 motors.set_speeds(BASE_SPEED, BASE_SPEED)
             elif pos == "left":
-                # Tourne à gauche : moteur gauche très lent, moteur droit normal
+               
                 motors.set_speeds(BASE_SPEED * TURN_SPEED_REDUCTION, BASE_SPEED)
             elif pos == "right":
-                # Tourne à droite : moteur droit très lent, moteur gauche normal
+                
                 motors.set_speeds(BASE_SPEED, BASE_SPEED * TURN_SPEED_REDUCTION)
             else:
-                # Aucun capteur ne voit la ligne : tourne sur lui-même (balayage)
-                # On utilise set_speeds pour ne pas bloquer avec la boucle en arrière-plan
+        
                 motors.set_speeds(BASE_SPEED * 0.5, -BASE_SPEED * 0.5)
 
             if LOOP_DELAY > 0:
